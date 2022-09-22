@@ -6,9 +6,9 @@ Utilizes `org.springframework.kafka.test.EmbeddedKafkaBroker` to have opportunit
 
 ## How to use
 
-1 Build project: `./gradlewe installBootDist`
-2 Build docker image: `docker build -t embedded-kafka_emk .`
-3 Use
+1. Build project: `./gradlewe installBootDist`
+2. Build docker image: `docker build -t embedded-kafka_emk .`
+3. Use
 
 ## Configuration 
 
