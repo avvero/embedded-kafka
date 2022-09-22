@@ -46,6 +46,8 @@ public class KafkaEmbeddedContainer extends GenericContainer<KafkaEmbeddedContai
 }
 ```
 
-Please take into account that we are forced to fix exposed ports (`#addFixedExposedPort`) because kafka start before 
-container gets host and mapped port, check `org.testcontainers.containers.KafkaContainer#brokerAdvertisedListener` to 
+> **_Please take into account:_**  that we are forced to fix exposed ports (`#addFixedExposedPort`) because kafka start before
+container gets host and mapped port, check `org.testcontainers.containers.KafkaContainer#brokerAdvertisedListener` to
 get more details.
+> 
+> It means that port would **fixed** for the host.
