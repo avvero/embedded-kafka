@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.kafka.test.EmbeddedKafkaBrokerExtended;
+import org.springframework.kafka.test.EmbeddedKafkaBroker;
 
 @Slf4j
 @SpringBootApplication
@@ -28,15 +28,15 @@ public class EmbeddedKafkaApplication {
         log.info("[KT] Kafka from testcontainers is going to start");
         String[] topics = new String[]{"topic1"};
 
-        EmbeddedKafkaBrokerExtended broker = new EmbeddedKafkaBrokerExtended(1, true, 1, topics)
+        EmbeddedKafkaBroker broker = new EmbeddedKafkaBroker(1, true, 1, topics)
                 .zkPort(ZK_PORT)
                 .kafkaPorts(KAFKA_PORT)
                 .brokerProperty("listeners", "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092")
                 .brokerProperty("listener.security.protocol.map", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT")
                 .brokerProperty("inter.broker.listener.name", "BROKER")
                 .brokerProperty("advertised.listeners", advertisedListeners)
-                .zkConnectionTimeout(EmbeddedKafkaBrokerExtended.DEFAULT_ZK_CONNECTION_TIMEOUT)
-                .zkSessionTimeout(EmbeddedKafkaBrokerExtended.DEFAULT_ZK_SESSION_TIMEOUT);
+                .zkConnectionTimeout(EmbeddedKafkaBroker.DEFAULT_ZK_CONNECTION_TIMEOUT)
+                .zkSessionTimeout(EmbeddedKafkaBroker.DEFAULT_ZK_SESSION_TIMEOUT);
 
         broker.afterPropertiesSet();
 //        System.setProperty("spring.kafka.bootstrap-servers", broker.getBrokersAsString());
