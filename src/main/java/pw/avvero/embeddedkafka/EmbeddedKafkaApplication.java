@@ -24,15 +24,15 @@ public class EmbeddedKafkaApplication {
         log.info("[KT] Kafka from testcontainers is going to start");
         String[] topics = new String[]{"topic1"};
         EmbeddedKafkaBroker broker = new EmbeddedKafkaBroker(1, true, 1, topics)
-                .zkPort(0)
+                .zkPort(55901)
                 .kafkaPorts(55900)
                 .zkConnectionTimeout(EmbeddedKafkaBroker.DEFAULT_ZK_CONNECTION_TIMEOUT)
                 .zkSessionTimeout(EmbeddedKafkaBroker.DEFAULT_ZK_SESSION_TIMEOUT);
         broker.afterPropertiesSet();
 //        System.setProperty("spring.kafka.bootstrap-servers", broker.getBrokersAsString());
         long finish = System.currentTimeMillis() - start;
-        log.info("[KT] Kafka from testcontainers is started on: {} in {} millis",
-                broker.getBrokersAsString(), finish);
+        log.info("[KT] Kafka from testcontainers is started on: {} (zookeeper: {}) in {} millis",
+                broker.getBrokersAsString(), broker.getZookeeperConnectionString(), finish);
         return new It();
     }
 

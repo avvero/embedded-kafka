@@ -1,0 +1,10 @@
+version: '2'
+services:
+  emk:
+    build: .
+    container_name: emk2
+    environment:
+      - key:value
+    ports:
+      - "55901:55901"
+      - "55900:55900"
