@@ -20,9 +20,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@TestPropertySource(properties = "app.kafka.startup-mode=by-demand")
+@TestPropertySource(properties = "app.kafka.startup-mode=on-demand")
 @DirtiesContext
-class KafkaStartByDemandTests extends Specification {
+class KafkaStartOnDemandTests extends Specification {
 
     @Autowired
     Consumer consumer
@@ -50,7 +50,7 @@ class KafkaStartByDemandTests extends Specification {
         Thread.sleep(2000) // TODO
         then:
         consumer.events == ["value1"]
-        expect: "Can start by demand if it's already started"
+        expect: "Can start on demand if it's already started"
         mockMvc.perform(post("/kafka/start")
                 .contentType(APPLICATION_JSON)
                 .content('{"advertisedListeners": "PLAINTEXT://localhost:9093,BROKER://localhost:9092"}')

@@ -46,7 +46,7 @@ class KafkaStartAtOnceTests extends Specification {
         consumer.events == ["value1"]
     }
 
-    def "Enable to start by demand if it's already started at once"() {
+    def "Enable to start on demand if it's already started at once"() {
         expect:
         mockMvc.perform(post("/kafka/start")
                 .contentType(APPLICATION_JSON)
