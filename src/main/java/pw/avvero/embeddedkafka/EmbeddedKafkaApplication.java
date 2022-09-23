@@ -1,13 +1,28 @@
 package pw.avvero.embeddedkafka;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.support.GenericWebApplicationContext;
+
+import java.io.Serializable;
+
+import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @Slf4j
+@EmbeddedKafka
 @SpringBootApplication
 public class EmbeddedKafkaApplication {
 
@@ -18,18 +33,53 @@ public class EmbeddedKafkaApplication {
     public static final int KAFKA_PORT = 9093;
     public static final int ZK_PORT = 2181;
 
-    public static class It {
-
+    @Bean
+    @ConditionalOnProperty(value = "app.kafka.startup-mode", havingValue = "at-once")
+    public EmbeddedKafkaBroker embeddedKafkaBroker(@Value("${app.kafka.advertised.listeners}") String advertisedListeners) {
+        return buildEmbeddedKafkaBroker(advertisedListeners);
     }
 
-    @Bean
-    public It embeddedKafkaBroker(@Value("${app.kafka.advertised.listeners}") String advertisedListeners) {
+    @RestController
+    @AllArgsConstructor
+    @ConditionalOnProperty(value = "app.kafka.startup-mode", havingValue = "by-demand")
+    public static class EmbeddedKafkaController {
+
+        private final GenericWebApplicationContext context;
+
+        @Data
+        public static class StartRequest implements Serializable {
+            private String advertisedListeners;
+        }
+
+        @PostMapping(value = "/kafka/start", consumes = APPLICATION_JSON_VALUE)
+        public void start(@RequestBody StartRequest request) {
+            if (context.containsBean(EmbeddedKafkaBroker.class.getName())) {
+                log.error("Can't start broker, it's already started");
+                return;
+            }
+            context.registerBean(EmbeddedKafkaBroker.class, () -> buildEmbeddedKafkaBroker(request.advertisedListeners));
+            context.getBean(EmbeddedKafkaBroker.class);
+        }
+    }
+
+    public static class EmbeddedKafkaBrokerObservable extends EmbeddedKafkaBroker implements BeanPostProcessor {
+        public EmbeddedKafkaBrokerObservable(int count, boolean controlledShutdown, int partitions, String... topics) {
+            super(count, controlledShutdown, partitions, topics);
+        }
+    }
+
+    public static EmbeddedKafkaBroker buildEmbeddedKafkaBroker(String advertisedListeners) {
         long start = System.currentTimeMillis();
         log.info("[KT] Kafka from testcontainers is going to start");
-        String[] topics = new String[]{"topic1"};
-
-        EmbeddedKafkaBroker broker = new EmbeddedKafkaBroker(1, true, 1, topics)
-                .zkPort(ZK_PORT)
+        EmbeddedKafkaBroker broker = new EmbeddedKafkaBrokerObservable(1, true, 1) {
+            public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+                long finish = System.currentTimeMillis() - start;
+                log.info("[KT] Kafka from testcontainers is started on: {} (zookeeper: {}, advertised.listeners: {}) in {} millis",
+                        this.getBrokersAsString(), this.getZookeeperConnectionString(), advertisedListeners, finish);
+                return bean;
+            }
+        };
+        broker.zkPort(ZK_PORT)
                 .kafkaPorts(KAFKA_PORT)
                 .brokerProperty("listeners", "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092")
                 .brokerProperty("listener.security.protocol.map", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT")
@@ -37,13 +87,6 @@ public class EmbeddedKafkaApplication {
                 .brokerProperty("advertised.listeners", advertisedListeners)
                 .zkConnectionTimeout(EmbeddedKafkaBroker.DEFAULT_ZK_CONNECTION_TIMEOUT)
                 .zkSessionTimeout(EmbeddedKafkaBroker.DEFAULT_ZK_SESSION_TIMEOUT);
-
-        broker.afterPropertiesSet();
-//        System.setProperty("spring.kafka.bootstrap-servers", broker.getBrokersAsString());
-        long finish = System.currentTimeMillis() - start;
-        log.info("[KT] Kafka from testcontainers is started on: {} (zookeeper: {}, advertised.listeners: {}) in {} millis",
-                broker.getBrokersAsString(), broker.getZookeeperConnectionString(), advertisedListeners, finish);
-        return new It();
+        return broker;
     }
-
 }
