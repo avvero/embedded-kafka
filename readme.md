@@ -21,6 +21,14 @@ Starts broker on container start.
 It's possible to provide `advertised.listeners` over configuration, use property `app.kafka.advertised.listeners`, like
 ```app.kafka.advertised.listeners=PLAINTEXT://localhost:9093,BROKER://localhost:9092```.
 
+> **_Please take into account:_**  that we are forced to fix exposed ports (`#addFixedExposedPort`) because kafka start before
+container gets host and mapped port, check `org.testcontainers.containers.KafkaContainer#brokerAdvertisedListener` to
+get more details.
+>
+> It means that port would **fixed** for the host.
+> 
+> Nice article with explanation why do may you need is here - https://www.confluent.io/blog/kafka-listeners-explained/
+
 ### Mode on-demand
 
 Does not start broker on container start. To start broker it's required to call http method /kafka/start and provide
@@ -35,13 +43,6 @@ To enable please provide property for container
 ```properties
 app.kafka.startup-mode=on-demand
 ```
-
-## Configuration 
-
-It's possible to provide `advertised.listeners` over configuration, use property `app.kafka.advertised.listeners`, like
-```app.kafka.advertised.listeners=PLAINTEXT://localhost:9093,BROKER://localhost:9092```.
-
-Nice article with explanation why do may you need is here - https://www.confluent.io/blog/kafka-listeners-explained/
 
 ## Example of `GenericContainer` implementation
 
@@ -110,9 +111,3 @@ public class KafkaEmbeddedContainer extends GenericContainer<KafkaEmbeddedContai
     }
 }
 ```
-
-> **_Please take into account:_**  that we are forced to fix exposed ports (`#addFixedExposedPort`) because kafka start before
-container gets host and mapped port, check `org.testcontainers.containers.KafkaContainer#brokerAdvertisedListener` to
-get more details.
-> 
-> It means that port would **fixed** for the host.
