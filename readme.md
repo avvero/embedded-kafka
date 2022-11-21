@@ -33,7 +33,10 @@ get more details.
 
 Does not start broker on container start. To start broker it's required to call http method /kafka/start and provide
 advertised listeners:
-```json
+```http
+POST http://localhost:8080/kafka/start HTTP/1.1
+Content-Type: application/json
+
 {
   "advertisedListeners": "PLAINTEXT://localhost:9093,BROKER://localhost:9092"
 }
