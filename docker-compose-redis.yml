@@ -1,7 +1,0 @@
-version: '2'
-services:
-  dps_redis:
-    image: redis:latest
-    container_name: dps_redis
-    ports:
-      - "6379:6379"

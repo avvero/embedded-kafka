@@ -2,7 +2,7 @@ version: '2'
 services:
   emk:
     build: .
-    container_name: emk2
+    container_name: emk
     environment:
       - key:value
     ports:

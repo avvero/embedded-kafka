@@ -1,0 +1,9 @@
+FROM arm64v8/alpine
+
+COPY build/native/nativeCompile/embedded-kafka embedded-kafka
+
+EXPOSE 8080
+EXPOSE 9093
+EXPOSE 2181
+
+ENTRYPOINT ["/embedded-kafka"]

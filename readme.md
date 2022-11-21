@@ -7,8 +7,15 @@ Utilizes `org.springframework.kafka.test.EmbeddedKafkaBroker` to have opportunit
 ## How to use
 
 1. Build project: `./gradlewe installBootDist`
-2. Build docker image: `docker build -t embedded-kafka_emk .`
+2. Build docker image: `docker build -t embedded-kafka_emk2 .`
+2. Build docker image: `docker run embedded-kafka_emk2`
 3. Use
+
+```bash
+docker-compose down --rmi all && docker-compose up
+docker-compose -f docker-compose-native.yml down --rmi all && docker-compose -f docker-compose-native.yml up
+```
+
 
 ## Modes
 
@@ -50,7 +57,7 @@ app.kafka.startup-mode=on-demand
 ## Example of `GenericContainer` implementation
 
 ```java
-package com.fxclub.test.spock;
+package test.spock;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
