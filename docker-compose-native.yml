@@ -3,7 +3,7 @@ services:
   emk_native:
     build:
       context: .
-      dockerfile: DockerfileNative
+      dockerfile: Dockerfile.native
     platform: linux/arm64
     environment:
       - key:value

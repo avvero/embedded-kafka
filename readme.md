@@ -4,22 +4,28 @@ Utilizes `org.springframework.kafka.test.EmbeddedKafkaBroker` to have opportunit
 
 > Disclaimer: a little bit dirty, but works, think about it as POC
 
-## How to use
+## Build container with java
 
 1. Build project: `./gradlewe installBootDist`
-2. Build docker image: `docker build -t embedded-kafka_emk2 .`
-2. Build docker image: `docker run embedded-kafka_emk2`
+2. Build docker image: `docker build -t embedded-kafka_emk .`
+2. Build docker image: `docker run embedded-kafka_emk`
 3. Use
 
+Optionally, you can use compose
 ```bash
 docker-compose down --rmi all && docker-compose up
+```
+
+## Build container with native
+
+One can use compose to build image:
+```bash
 docker-compose -f docker-compose-native.yml down --rmi all && docker-compose -f docker-compose-native.yml up
 ```
 
-
 ## Modes
 
-There are two modes: at-once (default), on-demand
+There are two modes: at-once, on-demand (default)
 
 ### Mode at-once 
 
@@ -120,4 +126,11 @@ public class KafkaEmbeddedContainer extends GenericContainer<KafkaEmbeddedContai
         return format("BROKER://%s:%s", containerInfo.getConfig().getHostName(), "9092");
     }
 }
+```
+
+## GraalVM builds
+
+Use to get config
+```bash
+java -agentlib:native-image-agent=config-output-dir=ConfigFolderName -jar build/libs/embedded-kafka-0.0.1-SNAPSHOT.jar
 ```
