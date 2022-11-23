@@ -1,9 +1,10 @@
 plugins {
-	id 'org.springframework.boot' version '2.7.3'
-	id 'io.spring.dependency-management' version '1.0.13.RELEASE'
 	id 'java'
 	id 'groovy'
 	id 'application'
+	id 'org.springframework.boot' version '3.0.0-RC2'
+	id 'io.spring.dependency-management' version '1.1.0'
+	id 'org.graalvm.buildtools.native' version '0.9.17'
 }
 
 group = 'pw.avvero'
@@ -12,6 +13,7 @@ sourceCompatibility = '17'
 
 repositories {
 	mavenCentral()
+	maven { url 'https://repo.spring.io/milestone' }
 }
 
 dependencies {
@@ -20,9 +22,8 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	implementation 'info.picocli:picocli-spring-boot-starter:4.6.3'
-	implementation "org.springframework.kafka:spring-kafka:2.8.2"
-	implementation "org.springframework.kafka:spring-kafka-test:2.8.2"
+	implementation "org.springframework.kafka:spring-kafka:2.9.2"
+	implementation "org.springframework.kafka:spring-kafka-test:2.9.2"
 
 	testCompileOnly 'org.projectlombok:lombok:1.18.24'
 	testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
@@ -36,5 +37,16 @@ dependencies {
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
+	}
+}
+
+graalvmNative {
+	agent {
+		modes {
+			// The direct agent mode allows users to directly pass options to the agent.
+			direct {
+				options.add("config-output-dir=ConfigFolderName")
+			}
+		}
 	}
 }

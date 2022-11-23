@@ -41,7 +41,7 @@ public class EmbeddedKafkaApplication {
 
     @RestController
     @AllArgsConstructor
-    @ConditionalOnProperty(value = "app.kafka.startup-mode", havingValue = "on-demand")
+    @ConditionalOnProperty(value = "app.kafka.startup-mode", havingValue = "on-demand", matchIfMissing = true)
     public static class EmbeddedKafkaController {
 
         private final GenericWebApplicationContext context;
