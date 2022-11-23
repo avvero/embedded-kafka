@@ -1,0 +1,13 @@
+version: '3'
+services:
+  emk_native:
+    build:
+      context: .
+      dockerfile: Dockerfile.native
+    platform: linux/arm64
+    environment:
+      - key:value
+    ports:
+      - "9093:9093"
+      - "2181:2181"
+      - "8080:8080"
