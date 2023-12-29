@@ -1,4 +1,4 @@
-package pw.avvero.embeddedkafka;
+package pw.avvero;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import org.springframework.kafka.test.EmbeddedKafkaZKBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,16 +19,17 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @Slf4j
 @EmbeddedKafka
-@SpringBootApplication
-public class EmbeddedKafkaApplication {
+@SpringBootApplication(scanBasePackages = "pw.avvero")
+public class Application {
 
     public static void main(String[] args) {
-        SpringApplication.run(EmbeddedKafkaApplication.class, args);
+        SpringApplication.run(Application.class, args);
     }
 
     public static final int KAFKA_PORT = 9093;
@@ -62,16 +64,16 @@ public class EmbeddedKafkaApplication {
         }
     }
 
-    public static class EmbeddedKafkaBrokerObservable extends EmbeddedKafkaBroker implements BeanPostProcessor {
+    public static class EmbeddedKafkaBrokerObservable extends EmbeddedKafkaZKBroker implements BeanPostProcessor {
         public EmbeddedKafkaBrokerObservable(int count, boolean controlledShutdown, int partitions, String... topics) {
             super(count, controlledShutdown, partitions, topics);
         }
     }
 
-    public static EmbeddedKafkaBroker buildEmbeddedKafkaBroker(String advertisedListeners) {
+    public static EmbeddedKafkaZKBroker buildEmbeddedKafkaBroker(String advertisedListeners) {
         long start = System.currentTimeMillis();
         log.info("[KT] Kafka from testcontainers is going to start");
-        EmbeddedKafkaBroker broker = new EmbeddedKafkaBrokerObservable(1, true, 1) {
+        EmbeddedKafkaZKBroker broker = new EmbeddedKafkaBrokerObservable(1, true, 1) {
             public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
                 long finish = System.currentTimeMillis() - start;
                 log.info("[KT] Kafka from testcontainers is started on: {} (zookeeper: {}, advertised.listeners: {}) in {} millis",
@@ -81,12 +83,14 @@ public class EmbeddedKafkaApplication {
         };
         broker.zkPort(ZK_PORT)
                 .kafkaPorts(KAFKA_PORT)
-                .brokerProperty("listeners", "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092")
-                .brokerProperty("listener.security.protocol.map", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT")
-                .brokerProperty("inter.broker.listener.name", "BROKER")
-                .brokerProperty("advertised.listeners", advertisedListeners)
-                .zkConnectionTimeout(EmbeddedKafkaBroker.DEFAULT_ZK_CONNECTION_TIMEOUT)
-                .zkSessionTimeout(EmbeddedKafkaBroker.DEFAULT_ZK_SESSION_TIMEOUT);
+                .zkConnectionTimeout(EmbeddedKafkaZKBroker.DEFAULT_ZK_CONNECTION_TIMEOUT)
+                .zkSessionTimeout(EmbeddedKafkaZKBroker.DEFAULT_ZK_SESSION_TIMEOUT)
+                .brokerProperties(Map.of(
+                        "listeners", "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092",
+                        "listener.security.protocol.map", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT",
+                        "inter.broker.listener.name", "BROKER",
+                        "advertised.listeners", advertisedListeners
+                ));
         return broker;
     }
 }
