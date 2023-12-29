@@ -2,7 +2,7 @@
 # Build image
 ####
 FROM --platform=linux/arm64 ghcr.io/graalvm/graalvm-ce:ol9-java17 AS build
-LABEL maintainer avvero
+LABEL maintainer=avvero
 
 WORKDIR /app
 COPY . .
@@ -12,7 +12,7 @@ RUN ./gradlew nativeCompile
 # Runtime image
 ####
 FROM debian:sid-slim
-LABEL maintainer avvero
+LABEL maintainer=avvero
 
 COPY --from=build /app/build/native/nativeCompile/embedded-kafka /app/embedded-kafka
 
