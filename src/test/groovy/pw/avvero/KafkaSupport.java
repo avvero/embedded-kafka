@@ -6,11 +6,14 @@ import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.listener.MessageListenerContainer;
+import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.util.ReflectionUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -51,69 +54,99 @@ public class KafkaSupport {
         log.trace("[KT] Kafka producer: initialization finished");
     }
 
-    public static int waitForAssignment(Object container, int partitions) throws Exception {
+    public static int waitForAssignment(Object container, int partitions) {
         if (container.getClass().getSimpleName().contains("KafkaMessageListenerContainer")) {
             return waitForSingleContainerAssignment(container, partitions);
-        }
-        List<?> containers = KafkaTestUtils.getPropertyValue(container, "containers", List.class);
-        int n = 0;
-        int count = 0;
-        Method getAssignedPartitions = null;
-        while (n++ < 200 && count < partitions) {
-            count = 0;
-            for (Object aContainer : containers) {
-                if (getAssignedPartitions == null) {
-                    getAssignedPartitions = getAssignedPartitionsMethod(aContainer.getClass());
+        } else {
+            List<?> containers = (List)KafkaTestUtils.getPropertyValue(container, "containers", List.class);
+            int n = 0;
+            int count = 0;
+            Method getAssignedPartitions = null;
+
+            while(n++ < 600 && count < partitions) {
+                count = 0;
+                Iterator var6 = containers.iterator();
+
+                while(var6.hasNext()) {
+                    Object aContainer = var6.next();
+                    if (getAssignedPartitions == null) {
+                        getAssignedPartitions = getAssignedPartitionsMethod(aContainer.getClass());
+                    }
+
+                    Collection assignedPartitions;
+                    try {
+                        assignedPartitions = (Collection)getAssignedPartitions.invoke(aContainer);
+                    } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException var11) {
+                        throw new ContainerTestUtilsException("Failed to invoke container method", var11);
+                    }
+
+                    if (assignedPartitions != null) {
+                        count += assignedPartitions.size();
+                    }
                 }
-                Collection<?> assignedPartitions = (Collection<?>) getAssignedPartitions.invoke(aContainer);
-                if (assignedPartitions != null) {
-                    count += assignedPartitions.size();
+
+                if (count < partitions) {
+                    try {
+                        Thread.sleep(100L);
+                    } catch (InterruptedException var10) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
-                KafkaMessageListenerContainer kafkaContainer = (KafkaMessageListenerContainer) aContainer;
-                log.debug("[KT] Wait for partition assignment, consumer {} is connected to {} with partitions: {}",
-                        kafkaContainer.getBeanName(), kafkaContainer.getContainerProperties().getTopics(),
-                        assignedPartitions.size());
             }
-            if (count < partitions) {
-                Thread.sleep(100);
-            }
+            return count;
         }
-        return count;
     }
 
-    private static int waitForSingleContainerAssignment(Object container, int partitions)
-            throws Exception {
+    private static int waitForSingleContainerAssignment(Object container, int partitions) {
         int n = 0;
         int count = 0;
         Method getAssignedPartitions = getAssignedPartitionsMethod(container.getClass());
-        while (n++ < 200 && count < partitions) {
+
+        while(n++ < 600 && count < partitions) {
             count = 0;
-            Collection<?> assignedPartitions = (Collection<?>) getAssignedPartitions.invoke(container);
+
+            Collection assignedPartitions;
+            try {
+                assignedPartitions = (Collection)getAssignedPartitions.invoke(container);
+            } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException var8) {
+                throw new ContainerTestUtilsException("Failed to invoke container method", var8);
+            }
+
             if (assignedPartitions != null) {
                 count = assignedPartitions.size();
             }
+
             if (count < partitions) {
-                Thread.sleep(100);
+                try {
+                    Thread.sleep(100L);
+                } catch (InterruptedException var7) {
+                    Thread.currentThread().interrupt();
+                }
             }
         }
+
         return count;
     }
 
     private static Method getAssignedPartitionsMethod(Class<?> clazz) {
-        final AtomicReference<Method> theMethod = new AtomicReference<Method>();
-        ReflectionUtils.doWithMethods(clazz, new ReflectionUtils.MethodCallback() {
-
-            @Override
-            public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-                theMethod.set(method);
-            }
-        }, new ReflectionUtils.MethodFilter() {
-
-            @Override
-            public boolean matches(Method method) {
-                return method.getName().equals("getAssignedPartitions") && method.getParameterTypes().length == 0;
-            }
+        AtomicReference<Method> theMethod = new AtomicReference();
+        ReflectionUtils.doWithMethods(clazz, (method) -> {
+            theMethod.set(method);
+        }, (method) -> {
+            return method.getName().equals("getAssignedPartitions") && method.getParameterTypes().length == 0;
         });
-        return theMethod.get();
+        if (theMethod.get() == null) {
+            throw new IllegalStateException("" + clazz + " has no getAssignedPartitions() method");
+        } else {
+            return (Method)theMethod.get();
+        }
+    }
+
+    private static class ContainerTestUtilsException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+
+        ContainerTestUtilsException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 }
