@@ -4,9 +4,11 @@
 FROM openjdk:17 AS build
 LABEL maintainer=avvero
 
+RUN microdnf install findutils
+
 WORKDIR /app
 COPY . .
-RUN ./gradlew installBootDist
+RUN ./gradlew installBootDist --no-daemon
 
 ####
 # Runtime image

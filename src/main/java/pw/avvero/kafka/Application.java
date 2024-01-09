@@ -1,5 +1,6 @@
 package pw.avvero.kafka;
 
+import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +48,11 @@ public class Application {
     public static class EmbeddedKafkaController {
 
         private final GenericWebApplicationContext context;
+
+        @PostConstruct
+        public void onDemandControllerInit() {
+            log.info("Controller ready, awaiting request to start Kafka.");
+        }
 
         @Data
         public static class StartRequest implements Serializable {
