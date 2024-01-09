@@ -8,8 +8,8 @@ Utilizes `org.springframework.kafka.test.EmbeddedKafkaBroker` to have opportunit
 
 1. Build project: `./gradlew installBootDist`
 2. Build docker image: `docker build -t embedded-kafka_emk .`
-2. Build docker image: `docker run embedded-kafka_emk`
-3. Use
+3. Build docker image: `docker run embedded-kafka_emk`
+4. Use
 
 Optionally, you can use compose
 ```bash
