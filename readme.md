@@ -4,6 +4,14 @@ Utilizes `org.springframework.kafka.test.EmbeddedKafkaBroker` to have opportunit
 
 > Disclaimer: a little bit dirty, but works, think about it as POC
 
+## Docker Image 
+
+Ready to use Docker image is hosted on Docker Hub and can be pulled using the following command:
+
+```bash
+docker pull avvero/emk
+```
+
 ## Build container with java
 
 1. Build project: `./gradlew installBootDist`
