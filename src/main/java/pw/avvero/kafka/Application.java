@@ -78,11 +78,11 @@ public class Application {
 
     public static EmbeddedKafkaZKBroker buildEmbeddedKafkaBroker(String advertisedListeners) {
         long start = System.currentTimeMillis();
-        log.info("[KT] Kafka from testcontainers is going to start");
+        log.info("[EMK] Kafka from EmbeddedKafkaZKBroker is going to start");
         EmbeddedKafkaZKBroker broker = new EmbeddedKafkaBrokerObservable(1, true, 1) {
             public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
                 long finish = System.currentTimeMillis() - start;
-                log.info("[KT] Kafka from testcontainers is started on: {} (zookeeper: {}, advertised.listeners: {}) in {} millis",
+                log.info("[EMK] Kafka from EmbeddedKafkaZKBroker is started on: {} (zookeeper: {}, advertised.listeners: {}) in {} millis",
                         this.getBrokersAsString(), this.getZookeeperConnectionString(), advertisedListeners, finish);
                 return bean;
             }

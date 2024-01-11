@@ -27,29 +27,29 @@ public class KafkaSupport {
 
     public static void waitForPartitionAssignment(ApplicationContext applicationContext) throws Exception {
         KafkaListenerEndpointRegistry registry = applicationContext.getBean(KafkaListenerEndpointRegistry.class);
-        log.trace("[KT] Wait for partition assignment is provided by setup method interceptor");
+        log.trace("[EMK] Wait for partition assignment is provided by setup method interceptor");
         for (MessageListenerContainer messageListenerContainer : registry.getListenerContainers()) {
             long startTime = System.currentTimeMillis();
-            log.trace("[KT] Partition assignment started for {}", messageListenerContainer.getListenerId());
+            log.trace("[EMK] Partition assignment started for {}", messageListenerContainer.getListenerId());
             int partitions = waitForAssignment(messageListenerContainer, 1);
 
             long gauge = System.currentTimeMillis() - startTime;
             if (partitions > 0) {
-                log.trace("[KT] Partition assignment for {} is succeeded in {} ms",
+                log.trace("[EMK] Partition assignment for {} is succeeded in {} ms",
                         messageListenerContainer.getListenerId(), gauge);
             } else {
-                String message = format("[KT] Partition assignment for %s is failed in %s ms",
+                String message = format("[EMK] Partition assignment for %s is failed in %s ms",
                         messageListenerContainer.getListenerId(), gauge);
                 log.error(message);
 //                throw new RuntimeException(message);
             }
         }
-        log.trace("[KT] At least one partition is assigned for every container");
+        log.trace("[EMK] At least one partition is assigned for every container");
 
         // Experimentally
-        log.trace("[KT] Kafka producer: start initialization");
+        log.trace("[EMK] Kafka producer: start initialization");
         applicationContext.getBean(KafkaTemplate.class).send("test", "test").get();
-        log.trace("[KT] Kafka producer: initialization finished");
+        log.trace("[EMK] Kafka producer: initialization finished");
     }
 
     public static int waitForAssignment(Object container, int partitions) {
