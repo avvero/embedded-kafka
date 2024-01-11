@@ -1,10 +1,11 @@
-package pw.avvero.kafka;
+package pw.avvero.emk;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.MessageListenerContainer;
+import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.util.ReflectionUtils;
 
@@ -14,8 +15,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static java.lang.String.format;
 
 /**
  * Provides method for waiting partition assignment
@@ -31,18 +30,22 @@ public class KafkaSupport {
         for (MessageListenerContainer messageListenerContainer : registry.getListenerContainers()) {
             long startTime = System.currentTimeMillis();
             log.trace("[EMK] Partition assignment started for {}", messageListenerContainer.getListenerId());
-            int partitions = waitForAssignment(messageListenerContainer, 1);
-
+            ContainerTestUtils.waitForAssignment(messageListenerContainer, 1);
+//            int partitions = waitForAssignment(messageListenerContainer, 1);
+//
+//            long gauge = System.currentTimeMillis() - startTime;
+//            if (partitions > 0) {
+//                log.trace("[EMK] Partition assignment for {} is succeeded in {} ms",
+//                        messageListenerContainer.getListenerId(), gauge);
+//            } else {
+//                String message = format("[EMK] Partition assignment for %s is failed in %s ms",
+//                        messageListenerContainer.getListenerId(), gauge);
+//                log.error(message);
+////                throw new RuntimeException(message);
+//            }
             long gauge = System.currentTimeMillis() - startTime;
-            if (partitions > 0) {
-                log.trace("[EMK] Partition assignment for {} is succeeded in {} ms",
-                        messageListenerContainer.getListenerId(), gauge);
-            } else {
-                String message = format("[EMK] Partition assignment for %s is failed in %s ms",
-                        messageListenerContainer.getListenerId(), gauge);
-                log.error(message);
-//                throw new RuntimeException(message);
-            }
+            log.trace("[EMK] Partition assignment for {} is succeeded in {} ms",
+                    messageListenerContainer.getListenerId(), gauge);
         }
         log.trace("[EMK] At least one partition is assigned for every container");
 
@@ -56,16 +59,16 @@ public class KafkaSupport {
         if (container.getClass().getSimpleName().contains("KafkaMessageListenerContainer")) {
             return waitForSingleContainerAssignment(container, partitions);
         } else {
-            List<?> containers = (List)KafkaTestUtils.getPropertyValue(container, "containers", List.class);
+            List<?> containers = (List) KafkaTestUtils.getPropertyValue(container, "containers", List.class);
             int n = 0;
             int count = 0;
             Method getAssignedPartitions = null;
 
-            while(n++ < 600 && count < partitions) {
+            while (n++ < 600 && count < partitions) {
                 count = 0;
                 Iterator var6 = containers.iterator();
 
-                while(var6.hasNext()) {
+                while (var6.hasNext()) {
                     Object aContainer = var6.next();
                     if (getAssignedPartitions == null) {
                         getAssignedPartitions = getAssignedPartitionsMethod(aContainer.getClass());
@@ -73,7 +76,7 @@ public class KafkaSupport {
 
                     Collection assignedPartitions;
                     try {
-                        assignedPartitions = (Collection)getAssignedPartitions.invoke(aContainer);
+                        assignedPartitions = (Collection) getAssignedPartitions.invoke(aContainer);
                     } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException var11) {
                         throw new ContainerTestUtilsException("Failed to invoke container method", var11);
                     }
@@ -100,12 +103,12 @@ public class KafkaSupport {
         int count = 0;
         Method getAssignedPartitions = getAssignedPartitionsMethod(container.getClass());
 
-        while(n++ < 600 && count < partitions) {
+        while (n++ < 600 && count < partitions) {
             count = 0;
 
             Collection assignedPartitions;
             try {
-                assignedPartitions = (Collection)getAssignedPartitions.invoke(container);
+                assignedPartitions = (Collection) getAssignedPartitions.invoke(container);
             } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException var8) {
                 throw new ContainerTestUtilsException("Failed to invoke container method", var8);
             }
@@ -136,7 +139,7 @@ public class KafkaSupport {
         if (theMethod.get() == null) {
             throw new IllegalStateException("" + clazz + " has no getAssignedPartitions() method");
         } else {
-            return (Method)theMethod.get();
+            return (Method) theMethod.get();
         }
     }
 

@@ -1,4 +1,4 @@
-package pw.avvero.kafka;
+package pw.avvero.emk;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package pw.avvero.kafka;
+package pw.avvero.emk;
 
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;

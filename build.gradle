@@ -35,11 +35,16 @@ dependencies {
 
 	testCompileOnly "org.projectlombok:lombok:1.18.30"
 	testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.boot:spring-boot-devtools'
+	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+
 	testImplementation 'org.codehaus.groovy:groovy-json:3.0.19'
 	testImplementation 'org.spockframework:spock-core:2.3-groovy-3.0'
 	testImplementation 'org.spockframework:spock-spring:2.3-groovy-3.0'
+	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation 'org.testcontainers:kafka'
 }
 
 tasks.named('test') {
