@@ -1,4 +1,4 @@
-package pw.avvero.emk;
+package pw.avvero.emk_container;
 
 import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.TestConfiguration;

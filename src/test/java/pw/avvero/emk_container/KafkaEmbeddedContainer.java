@@ -1,4 +1,4 @@
-package pw.avvero.emk;
+package pw.avvero.emk_container;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;

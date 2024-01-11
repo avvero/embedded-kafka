@@ -1,4 +1,4 @@
-package pw.avvero.emk;
+package pw.avvero.emk_container;
 
 import org.springframework.boot.autoconfigure.kafka.KafkaConnectionDetails;
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionDetailsFactory;

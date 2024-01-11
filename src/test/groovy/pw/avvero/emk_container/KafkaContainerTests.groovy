@@ -1,4 +1,4 @@
-package pw.avvero.emk
+package pw.avvero.emk_container
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -11,12 +11,13 @@ import org.springframework.messaging.support.MessageBuilder
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
+import pw.avvero.emk.KafkaSupport
 import spock.lang.Specification
 
 @SpringBootTest
 @ActiveProfiles(profiles = "test")
 @AutoConfigureMockMvc
-@ContextConfiguration(classes = [KafkaContainerConfiguration])
+@ContextConfiguration(classes = [TestApplication, KafkaContainerConfiguration])
 @DirtiesContext
 class KafkaContainerTests extends Specification {
 

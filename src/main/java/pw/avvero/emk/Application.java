@@ -26,7 +26,7 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @Slf4j
 @EmbeddedKafka
-@SpringBootApplication(scanBasePackages = "pw.avvero")
+@SpringBootApplication(scanBasePackages = "pw.avvero.emk")
 public class Application {
 
     public static void main(String[] args) {
