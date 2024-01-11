@@ -56,7 +56,7 @@ graalvmNative {
 		modes {
 			// The direct agent mode allows users to directly pass options to the agent.
 			direct {
-				options.add("config-output-dir=ConfigFolderName")
+				options.add("config-output-dir=src/main/resources/META-INF/native-image")
 			}
 		}
 	}

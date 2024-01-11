@@ -13,9 +13,13 @@ run:
 test:
 	./gradlew test
 
+agent:
+	./gradlew installBootDist
+	java -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image -jar build/libs/embedded-kafka-${VERSION}.jar
+
 # Native build command
 native-build:
-	./gradlew buildNative
+	./gradlew nativeCompile
 
 # Docker build command for standard Dockerfile
 docker-build:

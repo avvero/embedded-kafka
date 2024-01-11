@@ -14,24 +14,14 @@ docker pull avvero/emk
 
 ## Build container with java
 
-1. Build project: `./gradlew installBootDist`
-2. Build docker image: `docker build -t embedded-kafka_emk .`
-3. Build docker image: `docker run embedded-kafka_emk`
-4. Use
-
-Optionally, you can use compose
-```bash
-docker-compose down --rmi all && docker-compose up
-```
+1. Build project: `make docker-build`
 
 ## Build container with native
 
-One can use compose to build image:
-```bash
-docker-compose -f docker-compose-native.yml down --rmi all && docker-compose -f docker-compose-native.yml up
-```
+0. Setup graalvm: https://www.graalvm.org/latest/docs/getting-started
+1. Build project: `docker-build-native`
 
-## Modes
+## Using
 
 There are two modes: at-once, on-demand (default)
 
@@ -136,9 +126,10 @@ public class KafkaEmbeddedContainer extends GenericContainer<KafkaEmbeddedContai
 }
 ```
 
-## GraalVM builds
+## Include Reachability Metadata
 
-Use to get config
-```bash
-java -agentlib:native-image-agent=config-output-dir=ConfigFolderName -jar build/libs/embedded-kafka-0.0.1-SNAPSHOT.jar
-```
+0. Setup graalvm: https://www.graalvm.org/latest/docs/getting-started
+1. Include Reachability Metadata Using the Native Image Gradle Plugin
+2. Run `make agent`
+3. Run `emk-start.http` to start kafka broker in emk
+4. Run activity over broker
