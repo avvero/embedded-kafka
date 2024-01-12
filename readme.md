@@ -130,6 +130,5 @@ public class KafkaEmbeddedContainer extends GenericContainer<KafkaEmbeddedContai
 
 0. Setup graalvm: https://www.graalvm.org/latest/docs/getting-started
 1. Include Reachability Metadata Using the Native Image Gradle Plugin
-2. Run `make agent`
-3. Run `emk-start.http` to start kafka broker in emk
-4. Run activity over broker
+2. Run `make run-with-agent`
+3. Run activity over broker

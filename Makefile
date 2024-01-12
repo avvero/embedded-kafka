@@ -13,9 +13,9 @@ run:
 test:
 	./gradlew test
 
-agent:
+run-with-agent:
 	./gradlew installBootDist
-	java -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image -jar build/libs/embedded-kafka-${VERSION}.jar
+	java -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image -jar build/libs/embedded-kafka-${VERSION}.jar --app.kafka.startup-mode=at-once
 
 # Native build command
 native-build:

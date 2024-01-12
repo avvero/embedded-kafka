@@ -156,7 +156,7 @@
   "name":"com.fasterxml.jackson.core.ObjectCodec",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true,
-  "methods":[{"name":"getJsonFactory","parameterTypes":[] }, {"name":"readValues","parameterTypes":["com.fasterxml.jackson.core.JsonParser","com.fasterxml.jackson.core.type.ResolvedType"] }, {"name":"readValues","parameterTypes":["com.fasterxml.jackson.core.JsonParser","java.lang.Class"] }]
+  "methods":[{"name":"getJsonFactory","parameterTypes":[] }, {"name":"readValues","parameterTypes":["com.fasterxml.jackson.core.JsonParser","com.fasterxml.jackson.core.type.ResolvedType"] }, {"name":"readValues","parameterTypes":["com.fasterxml.jackson.core.JsonParser","com.fasterxml.jackson.core.type.TypeReference"] }]
 },
 {
   "name":"com.fasterxml.jackson.core.TreeCodec",
@@ -1130,10 +1130,6 @@
   "name":"java.util.Set"
 },
 {
-  "name":"java.util.concurrent.Callable",
-  "methods":[{"name":"call","parameterTypes":[] }]
-},
-{
   "name":"java.util.concurrent.Executor",
   "queryAllDeclaredMethods":true,
   "queryAllPublicMethods":true
@@ -1662,6 +1658,10 @@
 },
 {
   "name":"org.springframework.beans.factory.annotation.Qualifier",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"org.springframework.beans.factory.annotation.Value",
   "queryAllDeclaredMethods":true
 },
 {
@@ -3098,7 +3098,7 @@
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true,
   "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"getBootstrapServers","parameterTypes":[] }, {"name":"setBootstrapServers","parameterTypes":["java.util.List"] }]
 },
 {
   "name":"org.springframework.boot.autoconfigure.kafka.KafkaStreamsAnnotationDrivenConfiguration"
@@ -4661,7 +4661,7 @@
   "name":"org.springframework.kafka.config.KafkaListenerContainerFactory",
   "queryAllDeclaredMethods":true,
   "queryAllPublicMethods":true,
-  "methods":[{"name":"createContainer","parameterTypes":["java.util.regex.Pattern"] }, {"name":"createContainer","parameterTypes":["java.lang.String[]"] }]
+  "methods":[{"name":"createContainer","parameterTypes":["java.util.regex.Pattern"] }, {"name":"createContainer","parameterTypes":["org.springframework.kafka.support.TopicPartitionOffset[]"] }]
 },
 {
   "name":"org.springframework.kafka.config.KafkaListenerEndpointRegistry",
@@ -5378,7 +5378,7 @@
   "allDeclaredClasses":true,
   "queryAllDeclaredMethods":true,
   "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"main","parameterTypes":["java.lang.String[]"] }, {"name":"setBeanFactory","parameterTypes":["org.springframework.beans.factory.BeanFactory"] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"embeddedKafkaBroker","parameterTypes":["java.lang.String"] }, {"name":"main","parameterTypes":["java.lang.String[]"] }, {"name":"setBeanFactory","parameterTypes":["org.springframework.beans.factory.BeanFactory"] }]
 },
 {
   "name":"pw.avvero.emk.Application$$SpringCGLIB$$0",
@@ -5406,21 +5406,6 @@
   "name":"pw.avvero.emk.Application$EmbeddedKafkaBrokerObservable",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true
-},
-{
-  "name":"pw.avvero.emk.Application$EmbeddedKafkaController",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":["org.springframework.web.context.support.GenericWebApplicationContext"] }, {"name":"onDemandControllerInit","parameterTypes":[] }, {"name":"start","parameterTypes":["pw.avvero.emk.Application$EmbeddedKafkaController$StartRequest"] }]
-},
-{
-  "name":"pw.avvero.emk.Application$EmbeddedKafkaController$StartRequest",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setAdvertisedListeners","parameterTypes":["java.lang.String"] }]
 },
 {
   "name":"reactor.core.publisher.Flux"
@@ -5521,10 +5506,6 @@
 {
   "name":"sun.security.provider.SHA",
   "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"void",
-  "queryAllDeclaredMethods":true
 },
 {
   "name":"zipkin2.reporter.Sender"

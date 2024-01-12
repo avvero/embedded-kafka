@@ -661,10 +661,6 @@
   }, {
     "pattern":"\\Qorg/springframework/transaction/annotation/TransactionManagementConfigurationSelector.class\\E"
   }, {
-    "pattern":"\\Qorg/springframework/web/bind/annotation/ResponseBody.class\\E"
-  }, {
-    "pattern":"\\Qorg/springframework/web/bind/annotation/RestController.class\\E"
-  }, {
     "pattern":"\\Qorg/springframework/web/context/ServletContextAware.class\\E"
   }, {
     "pattern":"\\Qorg/springframework/web/servlet/config/annotation/DelegatingWebMvcConfiguration.class\\E"
@@ -676,10 +672,6 @@
     "pattern":"\\Qorg/springframework/web/servlet/config/annotation/WebMvcConfigurer.class\\E"
   }, {
     "pattern":"\\Qpublic/index.html\\E"
-  }, {
-    "pattern":"\\Qpw/avvero/emk/Application$EmbeddedKafkaController$StartRequest.class\\E"
-  }, {
-    "pattern":"\\Qpw/avvero/emk/Application$EmbeddedKafkaController.class\\E"
   }, {
     "pattern":"\\Qpw/avvero/emk/\\E"
   }, {
@@ -698,9 +690,6 @@
     "locales":[""]
   }, {
     "name":"org.apache.catalina.authenticator.LocalStrings",
-    "locales":[""]
-  }, {
-    "name":"org.apache.catalina.authenticator.jaspic.LocalStrings",
     "locales":[""]
   }, {
     "name":"org.apache.catalina.connector.LocalStrings",
@@ -748,9 +737,6 @@
     "name":"org.apache.coyote.http11.LocalStrings",
     "locales":[""]
   }, {
-    "name":"org.apache.coyote.http11.filters.LocalStrings",
-    "locales":[""]
-  }, {
     "name":"org.apache.naming.LocalStrings",
     "locales":[""]
   }, {
@@ -767,9 +753,6 @@
     "locales":[""]
   }, {
     "name":"org.apache.tomcat.util.http.LocalStrings",
-    "locales":[""]
-  }, {
-    "name":"org.apache.tomcat.util.http.parser.LocalStrings",
     "locales":[""]
   }, {
     "name":"org.apache.tomcat.util.modeler.LocalStrings",
