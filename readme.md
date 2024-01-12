@@ -14,7 +14,7 @@ docker pull avvero/emk
 
 or native image for linux/arm64
 ```bash
-docker pull avvero/emk
+docker pull avvero/emk-native
 ```
 
 ## Build container with java
