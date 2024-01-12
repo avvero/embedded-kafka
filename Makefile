@@ -24,17 +24,17 @@ native-build:
 # Docker build command for standard Dockerfile
 docker-build:
 	docker build -t $(DOCKER_REPO)/$(IMAGE_NAME):latest -f Dockerfile .
-	docker build -t $(DOCKER_REPO)/$(IMAGE_NAME):$(VERSION) -f Dockerfile .
-
-# Docker build command for native Dockerfile
-docker-build-native:
-	docker build -t $(DOCKER_REPO)/$(NATIVE_IMAGE_NAME):latest -f Dockerfile.native .
-	docker build -t $(DOCKER_REPO)/$(NATIVE_IMAGE_NAME):$(VERSION) -f Dockerfile.native .
+	docker tag $(DOCKER_REPO)/$(IMAGE_NAME):latest $(DOCKER_REPO)/$(IMAGE_NAME):$(VERSION)
 
 # Docker push command for standard image
 docker-push:
 	docker push $(DOCKER_REPO)/$(IMAGE_NAME):latest
 	docker push $(DOCKER_REPO)/$(IMAGE_NAME):$(VERSION)
+
+# Docker build command for native Dockerfile
+docker-build-native:
+	docker build --platform=linux/arm64 -t $(DOCKER_REPO)/$(NATIVE_IMAGE_NAME):latest -f Dockerfile.native .
+	docker tag $(DOCKER_REPO)/$(NATIVE_IMAGE_NAME):latest $(DOCKER_REPO)/$(NATIVE_IMAGE_NAME):$(VERSION)
 
 # Docker push command for native image
 docker-push-native:

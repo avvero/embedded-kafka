@@ -12,6 +12,11 @@ Ready to use Docker image is hosted on Docker Hub and can be pulled using the fo
 docker pull avvero/emk
 ```
 
+or native image for linux/arm64
+```bash
+docker pull avvero/emk
+```
+
 ## Build container with java
 
 1. Build project: `make docker-build`
@@ -95,7 +100,7 @@ public class KafkaEmbeddedContainer extends GenericContainer<KafkaEmbeddedContai
         addExposedPort(KAFKA_PORT);
         addExposedPort(ZOOKEEPER_PORT);
         withEnv("app.kafka.startup-mode", "on-demand");
-        waitingFor(Wait.forLogMessage(".*Tomcat started on port.*\\n", 1));
+        waitingFor(Wait.forLogMessage(".*Started Application in.*\\n", 1));
     }
 
     @Override
