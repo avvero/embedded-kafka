@@ -13,15 +13,15 @@ RUN ./gradlew --version
 
 WORKDIR /app
 COPY . .
-RUN ./gradlew installBootDist --no-daemon
+RUN ./gradlew emk-application:installBootDist --no-daemon
 
 ####
 # Runtime image
 ####
 FROM openjdk:17
 
-COPY --from=build /app/build/install/embedded-kafka-boot embedded-kafka-boot
+COPY --from=build /app/emk-application/build/install/emk-application-boot emk-application-boot
 
 EXPOSE 8080 9093 2181
 
-ENTRYPOINT ["./embedded-kafka-boot/bin/embedded-kafka"]
+ENTRYPOINT ["./emk-application-boot/bin/emk-application"]

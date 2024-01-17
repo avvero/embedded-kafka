@@ -11,7 +11,7 @@ RUN ./gradlew --version
 
 WORKDIR /app
 COPY . .
-RUN ./gradlew nativeCompile --no-daemon
+RUN ./gradlew emk-application:nativeCompile --no-daemon
 
 ####
 # Runtime image
@@ -19,8 +19,8 @@ RUN ./gradlew nativeCompile --no-daemon
 FROM debian:sid-slim
 LABEL maintainer=avvero
 
-COPY --from=build /app/build/native/nativeCompile/embedded-kafka /app/embedded-kafka
+COPY --from=build /app/emk-application/build/native/nativeCompile/emk-application /app/emk-application
 
 EXPOSE 8080 9093 2181
 
-ENTRYPOINT [ "/app/embedded-kafka" ]
+ENTRYPOINT [ "/app/emk-application" ]

@@ -8,14 +8,14 @@ VERSION := $(shell grep '^version=' gradle.properties | cut -d '=' -f2)
 
 # Gradle service run command
 run:
-	./gradlew bootRun
+	./gradlew emk-application:bootRun
 
 test:
 	./gradlew test
 
 run-with-agent:
-	./gradlew installBootDist
-	java -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image -jar build/libs/embedded-kafka-${VERSION}.jar --app.kafka.startup-mode=at-once
+	./gradlew emk-application:installBootDist
+	java -agentlib:native-image-agent=config-output-dir=emk-application/src/main/resources/META-INF/native-image -jar emk-application/build/libs/emk-application-${VERSION}.jar --app.kafka.startup-mode=at-once
 
 # Native build command
 native-build:
