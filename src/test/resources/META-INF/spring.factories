@@ -1,3 +1,0 @@
-# Connection Details Factories
-org.springframework.boot.autoconfigure.service.connection.ConnectionDetailsFactory=\
-pw.avvero.emk_container.KafkaEmbeddedContainerConnectionDetailsFactory

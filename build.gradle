@@ -4,13 +4,6 @@ plugins {
 	id 'application'
 	id 'org.springframework.boot' version '3.2.0'
 	id 'io.spring.dependency-management' version '1.1.4'
-	id 'org.graalvm.buildtools.native' version '0.9.17'
-}
-
-group = 'pw.avvero'
-
-java {
-	sourceCompatibility = '17'
 }
 
 configurations {
@@ -19,45 +12,15 @@ configurations {
 	}
 }
 
-repositories {
-	mavenCentral()
-	maven { url 'https://jitpack.io' }
-}
+allprojects {
+	repositories {
+		mavenCentral()
+		maven { url 'https://jitpack.io' }
+	}
 
-dependencies {
-	compileOnly 'org.projectlombok:lombok:1.18.30'
-	annotationProcessor 'org.projectlombok:lombok:1.18.30'
+	group = 'pw.avvero'
 
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	implementation "org.springframework.kafka:spring-kafka:3.1.1"
-	implementation "org.springframework.kafka:spring-kafka-test:3.1.1"
-
-	testCompileOnly "org.projectlombok:lombok:1.18.30"
-	testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
-
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.boot:spring-boot-devtools'
-	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
-
-	testImplementation 'org.codehaus.groovy:groovy-json:3.0.19'
-	testImplementation 'org.spockframework:spock-core:2.3-groovy-3.0'
-	testImplementation 'org.spockframework:spock-spring:2.3-groovy-3.0'
-	testImplementation 'org.testcontainers:junit-jupiter'
-	testImplementation 'org.testcontainers:kafka'
-}
-
-tasks.named('test') {
-	useJUnitPlatform()
-}
-
-graalvmNative {
-	agent {
-		modes {
-			// The direct agent mode allows users to directly pass options to the agent.
-			direct {
-				options.add("config-output-dir=src/main/resources/META-INF/native-image")
-			}
-		}
+	java {
+		sourceCompatibility = '17'
 	}
 }
