@@ -16,6 +16,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.lang.String.format;
+
 /**
  * Provides method for waiting partition assignment
  * Copy of org.springframework.kafka.test.utils.ContainerTestUtils except one moment - this method do not provide
@@ -30,22 +32,22 @@ public class KafkaSupport {
         for (MessageListenerContainer messageListenerContainer : registry.getListenerContainers()) {
             long startTime = System.currentTimeMillis();
             log.trace("[EMK] Partition assignment started for {}", messageListenerContainer.getListenerId());
-            ContainerTestUtils.waitForAssignment(messageListenerContainer, 1);
-//            int partitions = waitForAssignment(messageListenerContainer, 1);
-//
+//            ContainerTestUtils.waitForAssignment(messageListenerContainer, 1);
 //            long gauge = System.currentTimeMillis() - startTime;
-//            if (partitions > 0) {
-//                log.trace("[EMK] Partition assignment for {} is succeeded in {} ms",
-//                        messageListenerContainer.getListenerId(), gauge);
-//            } else {
-//                String message = format("[EMK] Partition assignment for %s is failed in %s ms",
-//                        messageListenerContainer.getListenerId(), gauge);
-//                log.error(message);
-////                throw new RuntimeException(message);
-//            }
+//            log.trace("[EMK] Partition assignment for {} is succeeded in {} ms",
+//                    messageListenerContainer.getListenerId(), gauge);
+            int partitions = waitForAssignment(messageListenerContainer, 1);
+
             long gauge = System.currentTimeMillis() - startTime;
-            log.trace("[EMK] Partition assignment for {} is succeeded in {} ms",
-                    messageListenerContainer.getListenerId(), gauge);
+            if (partitions > 0) {
+                log.trace("[EMK] Partition assignment for {} is succeeded in {} ms",
+                        messageListenerContainer.getListenerId(), gauge);
+            } else {
+                String message = format("[EMK] Partition assignment for %s is failed in %s ms",
+                        messageListenerContainer.getListenerId(), gauge);
+                log.error(message);
+//                throw new RuntimeException(message);
+            }
         }
         log.trace("[EMK] At least one partition is assigned for every container");
 

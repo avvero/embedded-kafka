@@ -1,0 +1,19 @@
+plugins {
+    id 'java'
+    id 'groovy'
+    id 'application'
+    id 'org.springframework.boot' version '3.2.0'
+    id 'io.spring.dependency-management' version '1.1.4'
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    implementation "org.springframework.kafka:spring-kafka:3.1.1"
+    implementation "org.springframework.kafka:spring-kafka-test:3.1.1"
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

@@ -11,7 +11,7 @@ import org.springframework.messaging.support.MessageBuilder
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
-import pw.avvero.emk.KafkaSupport
+
 import spock.lang.Specification
 
 @SpringBootTest
