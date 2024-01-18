@@ -6,19 +6,20 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.ApplicationContext
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.support.KafkaHeaders
+import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.messaging.Message
 import org.springframework.messaging.support.MessageBuilder
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
-
 import spock.lang.Specification
 
 @SpringBootTest
 @ActiveProfiles(profiles = "test")
 @AutoConfigureMockMvc
-@ContextConfiguration(classes = [TestApplication, KafkaContainerConfiguration])
+@ContextConfiguration(classes = [TestApplication])
 @DirtiesContext
+@EmbeddedKafka(partitions = 1, brokerProperties = ["listeners=PLAINTEXT://localhost:9092", "port=9092"])
 class KafkaTests extends Specification {
 
     @Autowired
