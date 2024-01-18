@@ -1,8 +1,6 @@
-# Embedded kafka in Docker Container
+# Native Embedded kafka in Docker Container
 
 Utilizes `org.springframework.kafka.test.EmbeddedKafkaBroker` to have opportunity to provide kafka in docker.
-
-> Disclaimer: a little bit dirty, but works, think about it as POC
 
 ## Docker Image 
 
@@ -19,18 +17,24 @@ docker pull avvero/emk-native
 
 ## Build container with java
 
-1. Build project: `make docker-build`
+1. Build project: `make emk-docker-build`
 
 ## Build container with native
 
 0. Setup graalvm: https://www.graalvm.org/latest/docs/getting-started
-1. Build project: `docker-build-native`
+1. Build project: `emk-docker-build-native`
 
 ## Using
 
+### Example of `GenericContainer` implementation
+
+Please see module `emk-application-testcontainer` to get insight.
+
+### Technical details
+
 There are two modes: at-once, on-demand (default)
 
-### Mode at-once 
+#### Mode at-once 
 
 Starts broker on container start.
 
@@ -45,7 +49,7 @@ get more details.
 > 
 > Nice article with explanation why do may you need is here - https://www.confluent.io/blog/kafka-listeners-explained/
 
-### Mode on-demand
+#### Mode on-demand
 
 Does not start broker on container start. To start broker it's required to call http method /kafka/start and provide
 advertised listeners:
@@ -63,13 +67,10 @@ To enable please provide property for container
 app.kafka.startup-mode=on-demand
 ```
 
-## Example of `GenericContainer` implementation
-
-Please see module `emk-application-testcontainer` to get insight.
-
-## Include Reachability Metadata
+## Native build details 
+### Include Reachability Metadata
 
 0. Setup graalvm: https://www.graalvm.org/latest/docs/getting-started
 1. Include Reachability Metadata Using the Native Image Gradle Plugin
-2. Run `make run-with-agent`
+2. Run `make emk-run-with-agent`
 3. Run activity over broker
