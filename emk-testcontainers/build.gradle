@@ -1,0 +1,106 @@
+plugins {
+    id 'java'
+    id 'groovy'
+    id 'maven-publish'
+    id 'signing'
+    id 'org.springframework.boot' version '3.2.0'
+    id 'io.spring.dependency-management' version '1.1.4'
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    implementation 'org.testcontainers:kafka'
+    implementation 'org.springframework.boot:spring-boot-testcontainers'
+
+    testCompileOnly "org.projectlombok:lombok:1.18.30"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-devtools'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+
+    testImplementation "org.springframework.kafka:spring-kafka:3.1.1"
+    testImplementation "org.springframework.kafka:spring-kafka-test:3.1.1"
+
+    testImplementation 'org.codehaus.groovy:groovy-json:3.0.19'
+    testImplementation 'org.spockframework:spock-core:2.3-groovy-3.0'
+    testImplementation 'org.spockframework:spock-spring:2.3-groovy-3.0'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:kafka'
+
+    testImplementation project(":kafka-support")
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+//            artifactId = "emk-testcontainers"
+//            groupId = "pw.avvero"
+//            version = "0.1.0"
+            from components.java
+            versionMapping {
+                allVariants {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                packaging = "jar"
+                name = 'EmbeddedKafka Testcontainers Support'
+                description = 'Utilizes org.springframework.kafka.test.EmbeddedKafkaBroker to have opportunity to provide native kafka in docker'
+                url = 'https://github.com/avvero/embedded-kafka'
+
+                licenses {
+                    license {
+                        name = 'MIT License'
+//                        url = 'http://'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'avvero'
+                        name = 'Anton Belyaev'
+                        email = 'avvero.abernathy@gmail.com'
+                    }
+                }
+
+                scm {
+                    connection = 'scm:git:git@github.com:avvero/embedded-kafka.git'
+                    developerConnection = 'scm:git:https://github.com/avvero/embedded-kafka.git'
+                    url = 'https://github.com/avvero/embedded-kafka'
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                username = ossrhUsername
+                password = ossrhPassword
+            }
+        }
+    }
+}
+
+// Настройка подписания
+signing {
+    sign publishing.publications.mavenJava
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}

@@ -9,20 +9,20 @@ import java.util.List;
 /**
  * See org.springframework.boot.testcontainers.service.connection.kafka.KafkaContainerConnectionDetailsFactory
  */
-public class KafkaEmbeddedContainerConnectionDetailsFactory extends ContainerConnectionDetailsFactory<KafkaEmbeddedContainer, KafkaConnectionDetails> {
+public class EmbeddedKafkaContainerConnectionDetailsFactory extends ContainerConnectionDetailsFactory<EmbeddedKafkaContainer, KafkaConnectionDetails> {
 
     @Override
-    protected KafkaConnectionDetails getContainerConnectionDetails(ContainerConnectionSource<KafkaEmbeddedContainer> source) {
-        return new KafkaEmbeddedContainerConnectionDetailsFactory.KafkaContainerConnectionDetails(source);
+    protected KafkaConnectionDetails getContainerConnectionDetails(ContainerConnectionSource<EmbeddedKafkaContainer> source) {
+        return new EmbeddedKafkaContainerConnectionDetailsFactory.KafkaContainerConnectionDetails(source);
     }
 
     /**
      * {@link KafkaConnectionDetails} backed by a {@link ContainerConnectionSource}.
      */
-    private static final class KafkaContainerConnectionDetails extends ContainerConnectionDetails<KafkaEmbeddedContainer>
+    private static final class KafkaContainerConnectionDetails extends ContainerConnectionDetails<EmbeddedKafkaContainer>
             implements KafkaConnectionDetails {
 
-        private KafkaContainerConnectionDetails(ContainerConnectionSource<KafkaEmbeddedContainer> source) {
+        private KafkaContainerConnectionDetails(ContainerConnectionSource<EmbeddedKafkaContainer> source) {
             super(source);
         }
 

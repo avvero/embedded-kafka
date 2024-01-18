@@ -1,0 +1,5 @@
+
+
+```
+./gradlew emk-testcontainers:publish
+```

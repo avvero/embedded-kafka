@@ -2,7 +2,7 @@ include 'example-spring-embedded-kafka'
 include 'example-testcontainers'
 
 include 'emk-application'
-include 'emk-application-testcontainer'
+include 'emk-testcontainers'
 include 'test-live-emk-application'
 
 include 'kafka-support'

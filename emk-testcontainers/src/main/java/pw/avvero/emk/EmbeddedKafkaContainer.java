@@ -1,7 +1,6 @@
 package pw.avvero.emk;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -21,14 +20,14 @@ import static java.lang.String.format;
  * - start container with http server
  * - call http method with advertisedListeners configuration to start broker
  */
-public class KafkaEmbeddedContainer extends GenericContainer<KafkaEmbeddedContainer> {
+public class EmbeddedKafkaContainer extends GenericContainer<EmbeddedKafkaContainer> {
 
     public static final int HTTP_PORT = 8080;
     public static final int KAFKA_PORT = 9093;
     public static final int ZOOKEEPER_PORT = 2181;
 
-    public KafkaEmbeddedContainer(String version) {
-        super(DockerImageName.parse("avvero/emk:" + version));
+    public EmbeddedKafkaContainer(String fullImageName) {
+        super(DockerImageName.parse(fullImageName));
         addExposedPort(HTTP_PORT);
         addExposedPort(KAFKA_PORT);
         addExposedPort(ZOOKEEPER_PORT);

@@ -18,7 +18,7 @@ import spock.lang.Specification
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = [TestApplication, KafkaContainerConfiguration])
 @DirtiesContext
-class KafkaEmbeddedContainerTests extends Specification {
+class EmbeddedKafkaContainerTests extends Specification {
 
     @Autowired
     Consumer consumer

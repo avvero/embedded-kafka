@@ -32,7 +32,7 @@ emk-docker-push:
 
 # Docker build command for native Dockerfile
 emk-docker-build-native:
-	docker build --platform=linux/arm64 -t $(DOCKER_REPO)/$(NATIVE_IMAGE_NAME):latest -f Dockerfile.native .
+	docker build -t $(DOCKER_REPO)/$(NATIVE_IMAGE_NAME):latest -f Dockerfile.native .
 	docker tag $(DOCKER_REPO)/$(NATIVE_IMAGE_NAME):latest $(DOCKER_REPO)/$(NATIVE_IMAGE_NAME):$(VERSION)
 
 # Docker push command for native image
