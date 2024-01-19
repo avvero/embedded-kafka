@@ -2,6 +2,28 @@
 
 Utilizes `org.springframework.kafka.test.EmbeddedKafkaBroker` to have opportunity to provide kafka in docker.
 
+## Usage
+
+Add dependency
+
+```groovy
+implementation 'pw.avvero:emk-testcontainers:0.1.0'
+```
+
+Create a `EmbeddedKafkaContainer` to use it in your tests:
+```java
+EmbeddedKafkaContainer kafka = new EmbeddedKafkaContainer("avvero/emk-native:latest"); // OR avvero/emk:latest
+```
+
+### Improved Testcontainers Support in Spring Boot 3.1
+
+The new `@ServiceConnection` annotation can be used on the container instance fields of your tests. See 
+tests `emk-testcontainers/src/test/java/pw/avvero/emk/KafkaContainerConfiguration.java`.
+
+Refer to [article in Spring blog](https://spring.io/blog/2023/06/23/improved-testcontainers-support-in-spring-boot-3-1) to get more information.
+
+---
+
 ## Docker Image 
 
 Ready to use Docker image is hosted on Docker Hub and can be pulled using the following command:
@@ -24,50 +46,8 @@ docker pull avvero/emk-native
 0. Setup graalvm: https://www.graalvm.org/latest/docs/getting-started
 1. Build project: `emk-docker-build-native`
 
-## Using
-
-### Example of `GenericContainer` implementation
-
-Please see module `emk-application-testcontainer` to get insight.
-
-### Technical details
-
-There are two modes: at-once, on-demand (default)
-
-#### Mode at-once 
-
-Starts broker on container start.
-
-It's possible to provide `advertised.listeners` over configuration, use property `app.kafka.advertised.listeners`, like
-```app.kafka.advertised.listeners=PLAINTEXT://localhost:9093,BROKER://localhost:9092```.
-
-> **_Please take into account:_**  that we are forced to fix exposed ports (`#addFixedExposedPort`) because kafka start before
-container gets host and mapped port, check `org.testcontainers.containers.KafkaContainer#brokerAdvertisedListener` to
-get more details.
->
-> It means that port would **fixed** for the host.
-> 
-> Nice article with explanation why do may you need is here - https://www.confluent.io/blog/kafka-listeners-explained/
-
-#### Mode on-demand
-
-Does not start broker on container start. To start broker it's required to call http method /kafka/start and provide
-advertised listeners:
-```http
-POST http://localhost:8080/kafka/start HTTP/1.1
-Content-Type: application/json
-
-{
-  "advertisedListeners": "PLAINTEXT://localhost:9093,BROKER://localhost:9092"
-}
-```
-
-To enable please provide property for container
-```properties
-app.kafka.startup-mode=on-demand
-```
-
 ## Native build details 
+
 ### Include Reachability Metadata
 
 0. Setup graalvm: https://www.graalvm.org/latest/docs/getting-started
