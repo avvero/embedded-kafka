@@ -1,5 +1,9 @@
 # Native Embedded kafka in Docker Container
 
+<div align="center">
+    <img src="assets/image.png" width="400" height="auto">
+</div>
+
 Utilizes `org.springframework.kafka.test.EmbeddedKafkaBroker` to have opportunity to provide kafka in docker.
 
 ## Usage
@@ -39,12 +43,11 @@ docker pull avvero/emk-native
 
 ## Build container with java
 
-1. Build project: `make emk-docker-build`
+Run command: `make emk-docker-build`
 
 ## Build container with native
 
-0. Setup graalvm: https://www.graalvm.org/latest/docs/getting-started
-1. Build project: `emk-docker-build-native`
+Run command: `emk-docker-build-native`
 
 ## Native build details 
 
