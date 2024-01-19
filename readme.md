@@ -4,7 +4,7 @@
     <img src="assets/image.png" width="400" height="auto">
 </div>
 
-Utilizes `org.springframework.kafka.test.EmbeddedKafkaBroker` to have opportunity to provide **native** kafka in docker.
+Utilizes `org.springframework.kafka.test.EmbeddedKafkaBroker` to provide **native** kafka in docker.
 
 ## Usage
 
