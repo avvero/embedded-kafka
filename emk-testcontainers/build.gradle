@@ -1,8 +1,6 @@
 plugins {
     id 'java'
     id 'groovy'
-    id 'maven-publish'
-    id 'signing'
     id 'org.springframework.boot' version '3.2.0'
     id 'io.spring.dependency-management' version '1.1.4'
 }
@@ -36,71 +34,4 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
-}
-
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-//            artifactId = "emk-testcontainers"
-//            groupId = "pw.avvero"
-//            version = "0.1.0"
-            from components.java
-            versionMapping {
-                allVariants {
-                    fromResolutionResult()
-                }
-            }
-            pom {
-                packaging = "jar"
-                name = 'EmbeddedKafka Testcontainers Support'
-                description = 'Utilizes org.springframework.kafka.test.EmbeddedKafkaBroker to have opportunity to provide native kafka in docker'
-                url = 'https://github.com/avvero/embedded-kafka'
-
-                licenses {
-                    license {
-                        name = 'MIT License'
-//                        url = 'http://'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = 'avvero'
-                        name = 'Anton Belyaev'
-                        email = 'avvero.abernathy@gmail.com'
-                    }
-                }
-
-                scm {
-                    connection = 'scm:git:git@github.com:avvero/embedded-kafka.git'
-                    developerConnection = 'scm:git:https://github.com/avvero/embedded-kafka.git'
-                    url = 'https://github.com/avvero/embedded-kafka'
-                }
-            }
-        }
-    }
-
-    repositories {
-        maven {
-            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            credentials {
-                username = ossrhUsername
-                password = ossrhPassword
-            }
-        }
-    }
-}
-
-// Настройка подписания
-signing {
-    sign publishing.publications.mavenJava
-}
-
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
 }
