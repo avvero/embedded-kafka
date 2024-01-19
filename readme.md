@@ -18,7 +18,7 @@ EmbeddedKafkaContainer kafka = new EmbeddedKafkaContainer("avvero/emk-native:lat
 ### Improved Testcontainers Support in Spring Boot 3.1
 
 The new `@ServiceConnection` annotation can be used on the container instance fields of your tests. See 
-tests `emk-testcontainers/src/test/java/pw/avvero/emk/KafkaContainerConfiguration.java`.
+[example](https://github.com/avvero/embedded-kafka/blob/sb3/example-testcontainers/src/test/java/pw/avvero/emk/KafkaContainerConfiguration.java) in tests.
 
 Refer to [article in Spring blog](https://spring.io/blog/2023/06/23/improved-testcontainers-support-in-spring-boot-3-1) to get more information.
 
