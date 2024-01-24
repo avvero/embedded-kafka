@@ -24,4 +24,4 @@ COPY --from=build /app/emk-application/build/install/emk-application-boot emk-ap
 
 EXPOSE 8080 9093 2181
 
-ENTRYPOINT ["./emk-application-boot/bin/emk-application"]
+CMD ["./emk-application-boot/bin/emk-application"]

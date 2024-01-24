@@ -4,15 +4,8 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
-
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
-
-import static java.lang.String.format;
 
 /**
  * Utilizes `org.springframework.kafka.test.EmbeddedKafkaBroker` to have opportunity to provide kafka in docker.
@@ -25,14 +18,18 @@ public class EmbeddedKafkaContainer extends GenericContainer<EmbeddedKafkaContai
     public static final int HTTP_PORT = 8080;
     public static final int KAFKA_PORT = 9093;
     public static final int ZOOKEEPER_PORT = 2181;
+    private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
-    public EmbeddedKafkaContainer(String fullImageName) {
-        super(DockerImageName.parse(fullImageName));
+    private final String imageName;
+
+    public EmbeddedKafkaContainer(String imageName) {
+        super(DockerImageName.parse(imageName));
+        this.imageName = imageName;
         addExposedPort(HTTP_PORT);
         addExposedPort(KAFKA_PORT);
         addExposedPort(ZOOKEEPER_PORT);
-        withEnv("app.kafka.startup-mode", "on-demand");
-        waitingFor(Wait.forLogMessage(".*Started Application in.*\\n", 1));
+        setCommand("/bin/sh", "-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do echo 'Waiting for start kafka'; sleep 0.1; done; " + STARTER_SCRIPT);
+        waitingFor(Wait.forLogMessage(".*Waiting for start kafka.*", 1));
     }
 
     @Override
@@ -41,16 +38,12 @@ public class EmbeddedKafkaContainer extends GenericContainer<EmbeddedKafkaContai
         // Start broker on demand  with specified advertised listeners config
         String brokerAdvertisedListener = brokerAdvertisedListener(containerInfo);
         String advertisedListeners = String.join(",", getBootstrapServers(), brokerAdvertisedListener);
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest
-                .newBuilder(URI.create(String.format("http://%s:%s/kafka/start", getHost(), getMappedPort(HTTP_PORT))))
-                .headers("Content-Type", "application/json")
-                .POST(BodyPublishers.ofString(format("{\"advertisedListeners\": \"%s\"}", advertisedListeners)))
-                .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() != 200) {
-            throw new IllegalStateException(format("Can't start kafka on demand: http code %s", response.statusCode()));
-        }
+        //
+        String command = "#!/bin/bash\n"
+                + (imageName.contains("native") ? "/app/emk-application" : "./emk-application-boot/bin/emk-application")
+                + " --app.kafka.startup-mode=at-once --app.kafka.advertised.listeners="
+                + advertisedListeners;
+        copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
     }
 
     public String getBootstrapServers() {

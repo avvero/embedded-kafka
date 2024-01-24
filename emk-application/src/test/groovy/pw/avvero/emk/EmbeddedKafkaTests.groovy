@@ -8,24 +8,15 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.support.KafkaHeaders
 import org.springframework.messaging.Message
 import org.springframework.messaging.support.MessageBuilder
-import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.TestPropertySource
-import org.springframework.test.web.servlet.MockMvc
 import spock.lang.Specification
-
-import static org.springframework.http.MediaType.APPLICATION_JSON
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @SpringBootTest
 @ActiveProfiles(profiles = "test")
 @ContextConfiguration
 @AutoConfigureMockMvc
-@TestPropertySource(properties = "app.kafka.startup-mode=at-once")
-@DirtiesContext
-class KafkaStartAtOnceTests extends Specification {
+class EmbeddedKafkaTests extends Specification {
 
     @Autowired
     Consumer consumer
@@ -33,8 +24,6 @@ class KafkaStartAtOnceTests extends Specification {
     KafkaTemplate<Object, Object> kafkaTemplate
     @Autowired
     ApplicationContext applicationContext
-    @Autowired
-    MockMvc mockMvc
 
     def "Can send event to topic and receive event from it"() {
         setup:
@@ -48,14 +37,5 @@ class KafkaStartAtOnceTests extends Specification {
         Thread.sleep(2000) // TODO
         then:
         consumer.events == ["value1"]
-    }
-
-    def "Enable to start on demand if it's already started at once"() {
-        expect:
-        mockMvc.perform(post("/kafka/start")
-                .contentType(APPLICATION_JSON)
-                .content('{"advertisedListeners": "PLAINTEXT://localhost:9093,BROKER://localhost:9092"}')
-                .accept(APPLICATION_JSON))
-                .andExpect(status().isNotFound())
     }
 }

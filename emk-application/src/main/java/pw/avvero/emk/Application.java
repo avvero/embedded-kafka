@@ -1,27 +1,16 @@
 package pw.avvero.emk;
 
-import jakarta.annotation.PostConstruct;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.EmbeddedKafkaZKBroker;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.support.GenericWebApplicationContext;
 
-import java.io.Serializable;
 import java.util.Map;
-
-import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @Slf4j
 @SpringBootApplication(scanBasePackages = "pw.avvero.emk")
@@ -35,46 +24,7 @@ public class Application {
     public static final int ZK_PORT = 2181;
 
     @Bean
-    @ConditionalOnProperty(value = "app.kafka.startup-mode", havingValue = "at-once")
     public EmbeddedKafkaBroker embeddedKafkaBroker(@Value("${app.kafka.advertised.listeners}") String advertisedListeners) {
-        return buildEmbeddedKafkaBroker(advertisedListeners);
-    }
-
-    @RestController
-    @AllArgsConstructor
-    @ConditionalOnProperty(value = "app.kafka.startup-mode", havingValue = "on-demand", matchIfMissing = true)
-    public static class EmbeddedKafkaController {
-
-        private final GenericWebApplicationContext context;
-
-        @PostConstruct
-        public void onDemandControllerInit() {
-            log.info("Controller ready, awaiting request to start Kafka.");
-        }
-
-        @Data
-        public static class StartRequest implements Serializable {
-            private String advertisedListeners;
-        }
-
-        @PostMapping(value = "/kafka/start", consumes = APPLICATION_JSON_VALUE)
-        public void start(@RequestBody StartRequest request) {
-            if (context.containsBean(EmbeddedKafkaBroker.class.getName())) {
-                log.error("Can't start broker, it's already started");
-                return;
-            }
-            context.registerBean(EmbeddedKafkaBroker.class, () -> buildEmbeddedKafkaBroker(request.advertisedListeners));
-            context.getBean(EmbeddedKafkaBroker.class);
-        }
-    }
-
-    public static class EmbeddedKafkaBrokerObservable extends EmbeddedKafkaZKBroker implements BeanPostProcessor {
-        public EmbeddedKafkaBrokerObservable(int count, boolean controlledShutdown, int partitions, String... topics) {
-            super(count, controlledShutdown, partitions, topics);
-        }
-    }
-
-    public static EmbeddedKafkaZKBroker buildEmbeddedKafkaBroker(String advertisedListeners) {
         long start = System.currentTimeMillis();
         log.info("[EMK] Kafka from EmbeddedKafkaZKBroker is going to start");
         EmbeddedKafkaZKBroker broker = new EmbeddedKafkaBrokerObservable(1, true, 1) {
@@ -96,5 +46,11 @@ public class Application {
                         "advertised.listeners", advertisedListeners
                 ));
         return broker;
+    }
+
+    public static class EmbeddedKafkaBrokerObservable extends EmbeddedKafkaZKBroker implements BeanPostProcessor {
+        public EmbeddedKafkaBrokerObservable(int count, boolean controlledShutdown, int partitions, String... topics) {
+            super(count, controlledShutdown, partitions, topics);
+        }
     }
 }

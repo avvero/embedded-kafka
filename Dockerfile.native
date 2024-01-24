@@ -23,4 +23,4 @@ COPY --from=build /app/emk-application/build/native/nativeCompile/emk-applicatio
 
 EXPOSE 8080 9093 2181
 
-ENTRYPOINT [ "/app/emk-application" ]
+CMD [ "/app/emk-application" ]

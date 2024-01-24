@@ -8,7 +8,6 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.support.KafkaHeaders
 import org.springframework.messaging.Message
 import org.springframework.messaging.support.MessageBuilder
-import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
@@ -17,7 +16,6 @@ import spock.lang.Specification
 @ActiveProfiles(profiles = "test")
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = [TestApplication, KafkaContainerConfiguration])
-@DirtiesContext
 class EmbeddedKafkaContainerTests extends Specification {
 
     @Autowired
