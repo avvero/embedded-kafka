@@ -28,6 +28,15 @@ Refer to [article in Spring blog](https://spring.io/blog/2023/06/23/improved-tes
 
 ---
 
+## Examples for using Kafka in integration tests
+
+One can find examples for using Kafka in integration tests:
+- EmbeddedKafka - module `example-spring-embedded-kafka`
+- Testcontainers - module `example-testcontainers`
+- Embedded Kafka Native - module `example-embedded-kafka-container`
+
+---
+
 ## Docker Image 
 
 Ready to use Docker image is hosted on Docker Hub and can be pulled using the following command:
