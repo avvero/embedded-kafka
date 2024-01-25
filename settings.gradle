@@ -7,5 +7,6 @@ include 'emk-testcontainers'
 include 'test-live-emk-application'
 
 include 'kafka-support'
+include 'benchmark'
 
 rootProject.name = 'embedded-kafka'
