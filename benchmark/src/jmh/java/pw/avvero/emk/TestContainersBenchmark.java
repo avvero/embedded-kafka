@@ -13,7 +13,27 @@ import static org.apache.kafka.clients.admin.AdminClientConfig.BOOTSTRAP_SERVERS
 public class TestContainersBenchmark {
 
     @Benchmark
-    public void testContainersKafka() throws ExecutionException, InterruptedException {
+    public void testContainersKafkaStart() throws ExecutionException, InterruptedException {
+        KafkaContainer container = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.3"));
+        container.start();
+        container.stop();
+    }
+
+    @Benchmark
+    public void emkJvmKafkaStart() throws ExecutionException, InterruptedException {
+        EmbeddedKafkaContainer container = new EmbeddedKafkaContainer("avvero/emk:1.0.0");
+        container.start();
+        container.stop();
+    }
+    @Benchmark
+    public void emkNativeKafkaStart() throws ExecutionException, InterruptedException {
+        EmbeddedKafkaContainer container = new EmbeddedKafkaContainer("avvero/emk-native:1.0.0");
+        container.start();
+        container.stop();
+    }
+
+    @Benchmark
+    public void testContainersKafkaStartAndReady() throws ExecutionException, InterruptedException {
         KafkaContainer container = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.3"));
         container.start();
         checkKafkaReadiness(container.getBootstrapServers());
@@ -21,14 +41,14 @@ public class TestContainersBenchmark {
     }
 
     @Benchmark
-    public void emkJvmKafka() throws ExecutionException, InterruptedException {
+    public void emkJvmKafkaStartAndReady() throws ExecutionException, InterruptedException {
         EmbeddedKafkaContainer container = new EmbeddedKafkaContainer("avvero/emk:1.0.0");
         container.start();
         checkKafkaReadiness(container.getBootstrapServers());
         container.stop();
     }
     @Benchmark
-    public void emkNativeKafka() throws ExecutionException, InterruptedException {
+    public void emkNativeKafkaStartAndReady() throws ExecutionException, InterruptedException {
         EmbeddedKafkaContainer container = new EmbeddedKafkaContainer("avvero/emk-native:1.0.0");
         container.start();
         checkKafkaReadiness(container.getBootstrapServers());
