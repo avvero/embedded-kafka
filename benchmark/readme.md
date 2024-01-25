@@ -12,8 +12,9 @@ Each benchmark involves starting the Kafka container, checking its operational r
 the AdminClient, and then stopping the container.
 
 ## Results
-
+```
 Benchmark                                    Mode  Cnt  Score   Error  Units
 TestContainersBenchmark.emkJvmKafka            ss   10  2,751 ± 0,657   s/op
 TestContainersBenchmark.emkNativeKafka         ss   10  0,592 ± 0,068   s/op
 TestContainersBenchmark.testContainersKafka    ss   10  2,994 ± 0,162   s/op
+```
