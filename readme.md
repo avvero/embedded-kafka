@@ -11,12 +11,12 @@ Utilizes `org.springframework.kafka.test.EmbeddedKafkaBroker` and GraalVM to pro
 Add dependency
 
 ```groovy
-implementation 'pw.avvero:emk-testcontainers:0.1.0'
+implementation 'pw.avvero:emk-testcontainers:1.0.0'
 ```
 
 Create a `EmbeddedKafkaContainer` to use it in your tests:
 ```java
-EmbeddedKafkaContainer kafka = new EmbeddedKafkaContainer("avvero/emk-native:latest"); // OR avvero/emk:latest
+EmbeddedKafkaContainer kafka = new EmbeddedKafkaContainer("avvero/emk-native:1.0.0"); // OR avvero/emk:latest
 ```
 
 ### Improved Testcontainers Support in Spring Boot 3.1

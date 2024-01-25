@@ -5,7 +5,7 @@
 
     <groupId>pw.avvero</groupId>
     <artifactId>emk-testcontainers</artifactId>
-    <version>0.2.0</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>EmbeddedKafka Testcontainers Support</name>
@@ -156,7 +156,7 @@
             <plugin>
                 <groupId>org.sonatype.central</groupId>
                 <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.1.2</version>
+                <version>0.3.0</version>
                 <extensions>true</extensions>
                 <configuration>
                     <publishingServerId>central</publishingServerId>

@@ -12,6 +12,6 @@ public class KafkaContainerConfiguration {
     @RestartScope
     @ServiceConnection
     EmbeddedKafkaContainer kafkaContainer() {
-        return new EmbeddedKafkaContainer("avvero/emk-native:latest");
+        return new EmbeddedKafkaContainer("avvero/emk-native:1.0.0");
     }
 }
