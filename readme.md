@@ -6,9 +6,9 @@
 
 Utilizes `org.springframework.kafka.test.EmbeddedKafkaBroker` and GraalVM to provide **native** kafka in docker.
 
-## Articles:
+## Article
 
-In this article, I want to share my experience with creating a native image for EmbeddedKafka using GraalVM. Utilizing 
+In the article, I want to share my experience with creating a native image for EmbeddedKafka using GraalVM. Utilizing 
 this image in integration tests not only speeds up the execution of test scenarios but also reduces memory consumption.
 Interestingly, when compared to using confluentinc/cp-kafka in Testcontainers, there is a noticeable difference in both 
 speed and memory usage — and it’s not in favor of the latter.
