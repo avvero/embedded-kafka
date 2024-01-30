@@ -5,7 +5,7 @@
 
     <groupId>pw.avvero</groupId>
     <artifactId>emk-testcontainers</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>EmbeddedKafka Testcontainers Support</name>
@@ -160,7 +160,8 @@
                 <extensions>true</extensions>
                 <configuration>
                     <publishingServerId>central</publishingServerId>
-                    <tokenEnabled>true</tokenEnabled>
+                    <tokenAuth>true</tokenAuth>
+                    <deploymentName>Deployment_${version}</deploymentName>
                 </configuration>
             </plugin>
             <plugin>
