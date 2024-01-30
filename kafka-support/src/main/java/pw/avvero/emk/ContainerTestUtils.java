@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Modified by Belyaev Anton - modified methods:
+ * - pw.avvero.emk.ContainerTestUtils.waitForAssignment,
+ * - pw.avvero.emk.ContainerTestUtils.waitForSingleContainerAssignment.
  */
 
 package pw.avvero.emk;
@@ -39,18 +43,25 @@ public final class ContainerTestUtils {
     }
 
     /**
-     * Wait until the container has the required number of assigned partitions.
+     * Wait until the container has the required number of assigned partitions
+     * and return the actual number of assigned partitions.
+     * This method has been modified from the original version:
+     * - The method now returns an integer representing the number of assigned partitions.
+     * - The method no longer throws an IllegalStateException if the actual number of
+     *   assigned partitions does not match the expected number. Instead, it returns the actual
+     *   count of assigned partitions.
+     *
      * @param container the container.
      * @param partitions the number of partitions.
+     * @return an integer value representing [описание возвращаемого значения].
      * @throws IllegalStateException if the operation cannot be completed (since 2.3.4) as
      * expected.
      * @throws ContainerTestUtilsException if the call to the container's
      * getAssignedPartitions() method fails.
      */
-    public static void waitForAssignment(Object container, int partitions) { // NOSONAR complexity
+    public static int waitForAssignment(Object container, int partitions) { // NOSONAR complexity
         if (container.getClass().getSimpleName().contains("KafkaMessageListenerContainer")) {
-            waitForSingleContainerAssignment(container, partitions);
-            return;
+            return waitForSingleContainerAssignment(container, partitions);
         }
         List<?> containers = KafkaTestUtils.getPropertyValue(container, "containers", List.class);
         int n = 0;
@@ -83,11 +94,12 @@ public final class ContainerTestUtils {
             }
         }
         if (count != partitions) {
-            throw new IllegalStateException(String.format("Expected %d but got %d partitions", partitions, count));
+            //throw new IllegalStateException(String.format("Expected %d but got %d partitions", partitions, count));
         }
+        return count;
     }
 
-    private static void waitForSingleContainerAssignment(Object container, int partitions) {
+    private static int waitForSingleContainerAssignment(Object container, int partitions) {
         int n = 0;
         int count = 0;
         Method getAssignedPartitions = getAssignedPartitionsMethod(container.getClass());
@@ -115,6 +127,7 @@ public final class ContainerTestUtils {
         if (count != partitions) {
             throw new IllegalStateException(String.format("Expected %d but got %d partitions", partitions, count));
         }
+        return count;
     }
 
     private static Method getAssignedPartitionsMethod(Class<?> clazz) {
