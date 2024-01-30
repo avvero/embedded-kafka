@@ -6,16 +6,23 @@ import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.MessageListenerContainer;
 
-import static java.lang.String.format;
-
 /**
- * Provides method for waiting partition assignment
- * Copy of org.springframework.kafka.test.utils.ContainerTestUtils except one moment - this method do not provide
- * assertion at the end
+ * Utility class providing support functions for Kafka in Spring applications.
  */
 @Slf4j
 public class KafkaSupport {
 
+    /**
+     * Waits for the partition assignment for all Kafka listener containers in the application context.
+     * This method ensures that each Kafka listener container is assigned at least one partition
+     * before proceeding. It also initializes Kafka producer by sending a test message.
+     *
+     * <p>This method is useful in scenarios where the application needs to wait for the Kafka
+     * consumers to be fully set up and ready before performing certain operations.</p>
+     *
+     * @param applicationContext the Spring application context containing the Kafka listener containers.
+     * @throws Exception if an error occurs during the process.
+     */
     public static void waitForPartitionAssignment(ApplicationContext applicationContext) throws Exception {
         KafkaListenerEndpointRegistry registry = applicationContext.getBean(KafkaListenerEndpointRegistry.class);
         log.trace("[EMK] Waiting for partition assignment is requested");
@@ -23,15 +30,13 @@ public class KafkaSupport {
             long startTime = System.currentTimeMillis();
             log.trace("[EMK] Waiting for partition assignment started for {}", messageListenerContainer.getListenerId());
             int partitions = ContainerTestUtils.waitForAssignment(messageListenerContainer, 1);
-
             long gauge = System.currentTimeMillis() - startTime;
             if (partitions > 0) {
                 log.trace("[EMK] Waiting for partition assignment for {} is succeeded in {} ms",
                         messageListenerContainer.getListenerId(), gauge);
             } else {
-                String message = format("[EMK] Waiting for partition assignment for %s is failed in %s ms",
+                log.error("[EMK] Waiting for partition assignment for {} is failed in {} ms",
                         messageListenerContainer.getListenerId(), gauge);
-                log.error(message);
             }
         }
         log.trace("[EMK] At least one partition is assigned for every container");
