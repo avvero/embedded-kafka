@@ -63,4 +63,26 @@ class KafkaSupportTests extends Specification {
         where:
         n = 100
     }
+
+    def "Can send many events to the different topics and receive them"() {
+        setup:
+        KafkaSupport.waitForPartitionAssignment(applicationContext)
+        def key = IdGenerator.getNext()
+        when:
+        n.times {
+            Message message = MessageBuilder
+                    .withPayload("value" + it)
+                    .setHeader(KafkaHeaders.TOPIC, "topic" + it)
+                    .setHeader(KafkaHeaders.KEY, key)
+                    .build()
+            kafkaTemplate.send(message).get()
+        }
+        KafkaSupport.waitForPartitionOffsetCommit(applicationContext)
+        then:
+        n.times {
+            assert recordCaptor.getRecords("topic" + it, key).size() == 1
+        }
+        where:
+        n = 10
+    }
 }

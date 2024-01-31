@@ -24,7 +24,7 @@ public class RecordCaptor {
             headers.put(header.key(), new String(header.value(), UTF_8));
         }
         Object value = record.value();
-        log.info("[EMK] Record captured for topic {} for key {}\n    Headers: {}\n    Value: {}", topic, key, headers, value);
+        log.debug("[EMK] Record captured for topic {} for key {}\n    Headers: {}\n    Value: {}", topic, key, headers, value);
         topicKeyRecords.computeIfAbsent(topic, k -> new HashMap<>())
                 .computeIfAbsent(key, k -> new ArrayList<>())
                 .add(value);
