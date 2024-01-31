@@ -19,10 +19,10 @@ import spock.lang.Specification
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = [TestApplication, KafkaContainerConfiguration])
 @DirtiesContext
-class KafkaTests extends Specification {
+class KafkaSupportTests extends Specification {
 
     @Autowired
-    Consumer consumer
+    RecordCaptor recordCaptor
     @Autowired
     KafkaTemplate<Object, Object> kafkaTemplate
     @Autowired
@@ -31,14 +31,36 @@ class KafkaTests extends Specification {
     def "Can send event to topic and receive event from it"() {
         setup:
         KafkaSupport.waitForPartitionAssignment(applicationContext)
+        def key = IdGenerator.getNext()
         when:
         Message message = MessageBuilder
                 .withPayload("value1")
                 .setHeader(KafkaHeaders.TOPIC, "topic1")
+                .setHeader(KafkaHeaders.KEY, key)
                 .build()
         kafkaTemplate.send(message).get()
         KafkaSupport.waitForPartitionOffsetCommit(applicationContext)
         then:
-        consumer.events == ["value1"]
+        recordCaptor.getRecords("topic1", key) == ["value1"]
+    }
+
+    def "Can send many events to the same topic and receive them from it"() {
+        setup:
+        KafkaSupport.waitForPartitionAssignment(applicationContext)
+        def key = IdGenerator.getNext()
+        when:
+        n.times {
+            Message message = MessageBuilder
+                    .withPayload("value" + it)
+                    .setHeader(KafkaHeaders.TOPIC, "topic1")
+                    .setHeader(KafkaHeaders.KEY, key)
+                    .build()
+            kafkaTemplate.send(message).get()
+        }
+        KafkaSupport.waitForPartitionOffsetCommit(applicationContext)
+        then:
+        recordCaptor.getRecords("topic1", key).size() == n
+        where:
+        n = 100
     }
 }

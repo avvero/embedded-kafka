@@ -6,7 +6,6 @@ import org.apache.kafka.common.TopicPartition;
 import org.springframework.boot.autoconfigure.kafka.KafkaConnectionDetails;
 import org.springframework.context.ApplicationContext;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.MessageListenerContainer;
 
 import java.util.Collections;
@@ -53,28 +52,17 @@ public class KafkaSupport {
         log.trace("[EMK] At least one partition is assigned for every container");
         // Experimentally
         log.trace("[EMK] Waiting for partition assignment, kafka producer: start initialization");
-        applicationContext.getBean(KafkaTemplate.class).send("test", "test").get();
+//        applicationContext.getBean(KafkaTemplate.class).send("test", "test").get();
         log.trace("[EMK] Waiting for partition assignment, kafka producer: initialization finished");
     }
 
     public static void waitForPartitionOffsetCommit(ApplicationContext applicationContext) throws InterruptedException,
             ExecutionException {
+        log.trace("[EMK] Waiting for offset commit is requested");
+        long startTime = System.currentTimeMillis();
         KafkaConnectionDetails kafkaConnectionDetails = applicationContext.getBean(KafkaConnectionDetails.class);
         try (AdminClient adminClient = AdminClient.create(singletonMap(BOOTSTRAP_SERVERS_CONFIG, kafkaConnectionDetails.getBootstrapServers()))) {
-            // Get partitions and topics
-            Map<String, TopicListing> topics = adminClient.listTopics().namesToListings().get();
-            Map<TopicPartition, OffsetSpec> topicPartitions = new HashMap<>();
-            for (String topic : topics.keySet()) {
-                DescribeTopicsResult topicInfo = adminClient.describeTopics(Collections.singletonList(topic));
-                int partitions = topicInfo.topicNameValues().get(topic).get().partitions().size();
-                for (int i = 0; i < partitions; i++) {
-                    topicPartitions.put(new TopicPartition(topic, i), OffsetSpec.latest());
-                }
-            }
-
-            // Get last offsets for partitions
-            Map<TopicPartition, Long> endOffsets = new HashMap<>();
-            adminClient.listOffsets(topicPartitions).all().get().forEach((tp, info) -> endOffsets.put(tp, info.offset()));
+            Map<TopicPartition, Long> endOffsets = getEndOffsetsForAllPartitions(adminClient);
 
             for (Map.Entry<TopicPartition, Long> entry : endOffsets.entrySet()) {
                 TopicPartition tp = entry.getKey();
@@ -93,11 +81,30 @@ public class KafkaSupport {
                     }
                     //
                     if (currentOffset != null && currentOffset < endOffset) {
-                        Thread.sleep(100);
+                        Thread.sleep(50); // todo parametrize
                     }
                 } while (currentOffset != null && currentOffset < endOffset);
             }
         }
+        log.trace("[EMK] Waiting for offset commit is finished in {} ms", System.currentTimeMillis() - startTime);
+    }
+
+    public static Map<TopicPartition, Long> getEndOffsetsForAllPartitions(AdminClient adminClient) throws ExecutionException,
+            InterruptedException {
+        // Get partitions and topics
+        Map<String, TopicListing> topics = adminClient.listTopics().namesToListings().get();
+        Map<TopicPartition, OffsetSpec> topicPartitions = new HashMap<>();
+        for (String topic : topics.keySet()) {
+            DescribeTopicsResult topicInfo = adminClient.describeTopics(Collections.singletonList(topic));
+            int partitions = topicInfo.topicNameValues().get(topic).get().partitions().size();
+            for (int i = 0; i < partitions; i++) {
+                topicPartitions.put(new TopicPartition(topic, i), OffsetSpec.latest());
+            }
+        }
+        // Get last offsets for partitions
+        Map<TopicPartition, Long> endOffsets = new HashMap<>();
+        adminClient.listOffsets(topicPartitions).all().get().forEach((tp, info) -> endOffsets.put(tp, info.offset()));
+        return endOffsets;
     }
 
     public static Map<TopicPartition, Long> getCurrentOffsetsForAllPartitions(ApplicationContext applicationContext,
