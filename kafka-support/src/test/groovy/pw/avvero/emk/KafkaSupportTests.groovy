@@ -28,7 +28,7 @@ class KafkaSupportTests extends Specification {
     @Autowired
     ApplicationContext applicationContext
 
-    def "Can send event to topic and receive event from it"() {
+    def "Can send message to topic and receive message from it"() {
         setup:
         KafkaSupport.waitForPartitionAssignment(applicationContext)
         def key = IdGenerator.getNext()
@@ -44,7 +44,7 @@ class KafkaSupportTests extends Specification {
         recordCaptor.getRecords("topic1", key) == ["value1"]
     }
 
-    def "Can send many events to the same topic and receive them from it"() {
+    def "Can send many messages to the same topic and receive them from it"() {
         setup:
         KafkaSupport.waitForPartitionAssignment(applicationContext)
         def key = IdGenerator.getNext()
@@ -61,10 +61,10 @@ class KafkaSupportTests extends Specification {
         then:
         recordCaptor.getRecords("topic1", key).size() == n
         where:
-        n = 100
+        n = 1000
     }
 
-    def "Can send many events to the different topics and receive them"() {
+    def "Can send many messages to the different topics and receive them"() {
         setup:
         KafkaSupport.waitForPartitionAssignment(applicationContext)
         def key = IdGenerator.getNext()
@@ -84,5 +84,25 @@ class KafkaSupportTests extends Specification {
         }
         where:
         n = 10
+    }
+
+    def "Message from the topic which is not captured can't be acquired"() {
+        setup:
+        KafkaSupport.waitForPartitionAssignment(applicationContext)
+        def key = IdGenerator.getNext()
+        when:
+        Message message = MessageBuilder
+                .withPayload("value")
+                .setHeader(KafkaHeaders.TOPIC, topic)
+                .setHeader(KafkaHeaders.KEY, key)
+                .build()
+        kafkaTemplate.send(message).get()
+        KafkaSupport.waitForPartitionOffsetCommit(applicationContext)
+        then:
+        noExceptionThrown()
+        and:
+        recordCaptor.getRecords(topic, key).size() == 0
+        where:
+        topic = "topic_UNEXPECTED"
     }
 }

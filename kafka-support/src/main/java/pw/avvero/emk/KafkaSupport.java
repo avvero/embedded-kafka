@@ -74,7 +74,7 @@ public class KafkaSupport {
                     Map<TopicPartition, Long> currentOffsets = getCurrentOffsetsForAllPartitions(applicationContext, adminClient);
                     currentOffset = currentOffsets.get(tp);
                     if (currentOffset == null) {
-                        log.debug("[EMK] Waiting for offset commit: TODO no offsets for {}", tp.topic());
+                        log.warn("[EMK] Waiting for offset commit for topic {}: topic is not under capture", tp.topic());
                     } else {
                         log.debug("[EMK] Waiting for offset commit for topic {}: [current: {}, end: {}]", tp.topic(),
                                 currentOffset, endOffset);
