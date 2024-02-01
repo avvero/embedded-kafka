@@ -22,6 +22,8 @@ import static org.apache.kafka.clients.admin.AdminClientConfig.BOOTSTRAP_SERVERS
 @Slf4j
 public class KafkaSupport {
 
+    public static final int WAIT_OFFSET_COMMIT_ATTEMPTS_MAX = 100;
+
     /**
      * Waits for the partition assignment for all Kafka listener containers in the application context.
      * This method ensures that each Kafka listener container is assigned at least one partition
@@ -35,30 +37,30 @@ public class KafkaSupport {
      */
     public static void waitForPartitionAssignment(ApplicationContext applicationContext) throws Exception {
         KafkaListenerEndpointRegistry registry = applicationContext.getBean(KafkaListenerEndpointRegistry.class);
-        log.trace("[EMK] Waiting for partition assignment is requested");
+        log.debug("[EMK] Waiting for partition assignment is requested");
         for (MessageListenerContainer messageListenerContainer : registry.getListenerContainers()) {
             long startTime = System.currentTimeMillis();
-            log.trace("[EMK] Waiting for partition assignment started for {}", messageListenerContainer.getListenerId());
+            log.debug("[EMK] Waiting for partition assignment started for {}", messageListenerContainer.getListenerId());
             int partitions = ContainerTestUtils.waitForAssignment(messageListenerContainer, 1);
             long gauge = System.currentTimeMillis() - startTime;
             if (partitions > 0) {
-                log.trace("[EMK] Waiting for partition assignment for {} is succeeded in {} ms",
+                log.debug("[EMK] Waiting for partition assignment for {} is succeeded in {} ms",
                         messageListenerContainer.getListenerId(), gauge);
             } else {
                 log.error("[EMK] Waiting for partition assignment for {} is failed in {} ms",
                         messageListenerContainer.getListenerId(), gauge);
             }
         }
-        log.trace("[EMK] At least one partition is assigned for every container");
+        log.debug("[EMK] At least one partition is assigned for every container");
         // Experimentally
-        log.trace("[EMK] Waiting for partition assignment, kafka producer: start initialization");
+        log.debug("[EMK] Waiting for partition assignment, kafka producer: start initialization");
 //        applicationContext.getBean(KafkaTemplate.class).send("test", "test").get();
-        log.trace("[EMK] Waiting for partition assignment, kafka producer: initialization finished");
+        log.debug("[EMK] Waiting for partition assignment, kafka producer: initialization finished");
     }
 
     public static void waitForPartitionOffsetCommit(ApplicationContext applicationContext) throws InterruptedException,
             ExecutionException {
-        log.trace("[EMK] Waiting for offset commit is requested");
+        log.debug("[EMK] Waiting for offset commit is requested");
         long startTime = System.currentTimeMillis();
         KafkaConnectionDetails kafkaConnectionDetails = applicationContext.getBean(KafkaConnectionDetails.class);
         try (AdminClient adminClient = AdminClient.create(singletonMap(BOOTSTRAP_SERVERS_CONFIG, kafkaConnectionDetails.getBootstrapServers()))) {
@@ -68,7 +70,12 @@ public class KafkaSupport {
                 TopicPartition tp = entry.getKey();
                 long endOffset = entry.getValue();
                 Long currentOffset;
+                int attempt = 0;
                 do {
+                    if (++attempt > WAIT_OFFSET_COMMIT_ATTEMPTS_MAX) {
+                        throw new RuntimeException("Exceeded maximum attempts (" + WAIT_OFFSET_COMMIT_ATTEMPTS_MAX
+                                + ") waiting for offset commit for partition " + tp + ".");
+                    }
                     // Get current offsets for partitions
                     // TODO slow
                     Map<TopicPartition, Long> currentOffsets = getCurrentOffsetsForAllPartitions(applicationContext, adminClient);
@@ -86,7 +93,7 @@ public class KafkaSupport {
                 } while (currentOffset != null && currentOffset < endOffset);
             }
         }
-        log.trace("[EMK] Waiting for offset commit is finished in {} ms", System.currentTimeMillis() - startTime);
+        log.debug("[EMK] Waiting for offset commit is finished in {} ms", System.currentTimeMillis() - startTime);
     }
 
     public static Map<TopicPartition, Long> getEndOffsetsForAllPartitions(AdminClient adminClient) throws ExecutionException,
