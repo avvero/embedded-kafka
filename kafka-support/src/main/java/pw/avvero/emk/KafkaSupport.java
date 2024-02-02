@@ -6,12 +6,12 @@ import org.apache.kafka.common.TopicPartition;
 import org.springframework.boot.autoconfigure.kafka.KafkaConnectionDetails;
 import org.springframework.context.ApplicationContext;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.MessageListenerContainer;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonMap;
 import static org.apache.kafka.clients.admin.AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG;
@@ -36,6 +36,8 @@ public class KafkaSupport {
      * @throws Exception if an error occurs during the process.
      */
     public static void waitForPartitionAssignment(ApplicationContext applicationContext) throws Exception {
+        detectMultipleContainersForSameTopicWithinSameGroup(applicationContext);
+        //
         KafkaListenerEndpointRegistry registry = applicationContext.getBean(KafkaListenerEndpointRegistry.class);
         log.debug("[EMK] Waiting for partition assignment is requested");
         for (MessageListenerContainer messageListenerContainer : registry.getListenerContainers()) {
@@ -56,6 +58,42 @@ public class KafkaSupport {
         log.debug("[EMK] Waiting for partition assignment, kafka producer: start initialization");
 //        applicationContext.getBean(KafkaTemplate.class).send("test", "test").get();
         log.debug("[EMK] Waiting for partition assignment, kafka producer: initialization finished");
+    }
+
+    /**
+     * Detects and throws an exception if multiple Kafka listener containers are found for the same topic within
+     * the same group in the given Spring application context.
+     *
+     * @param applicationContext the Spring {@link ApplicationContext}
+     * @throws RuntimeException if multiple containers are detected
+     */
+    private static void detectMultipleContainersForSameTopicWithinSameGroup(ApplicationContext applicationContext) {
+        KafkaListenerEndpointRegistry registry = applicationContext.getBean(KafkaListenerEndpointRegistry.class);
+        Map<String, List<MessageListenerContainer>> containersPerTopicInSameGroup = new HashMap<>();
+        for (MessageListenerContainer container : registry.getListenerContainers()) {
+            ContainerProperties containerProperties = container.getContainerProperties();
+            if (containerProperties.getTopics() == null) continue;
+            for (String topic : containerProperties.getTopics()) {
+                containersPerTopicInSameGroup
+                        .computeIfAbsent(containerProperties.getGroupId() + " : " + topic, (k) -> new ArrayList<>())
+                        .add(container);
+            }
+        }
+        containersPerTopicInSameGroup.forEach((key, list) -> {
+            if (list.size() > 1) {
+                String[] parts = key.split(" : ");
+                String groupId = parts[0];
+                String topic = parts[1];
+                String containerNames = list.stream()
+                        .map(MessageListenerContainer::getListenerId)
+                        .collect(Collectors.joining(", "));
+                throw new RuntimeException(String.format("Detected multiple Kafka listener containers (%s) configured to " +
+                                "listen to topic '%s' within the same group '%s'. " +
+                                "This configuration may lead to unexpected behavior or message duplication. " +
+                                "Please ensure each topic is consumed by a unique group or container.",
+                        containerNames, topic, groupId));
+            }
+        });
     }
 
     public static void waitForPartitionOffsetCommit(ApplicationContext applicationContext) throws InterruptedException,
