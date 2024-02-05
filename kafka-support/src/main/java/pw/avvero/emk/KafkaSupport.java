@@ -46,8 +46,10 @@ public class KafkaSupport {
             int partitions = ContainerTestUtils.waitForAssignment(messageListenerContainer, 1);
             long gauge = System.currentTimeMillis() - startTime;
             if (partitions > 0) {
-                log.debug("[EMK] Waiting for partition assignment for {} is succeeded in {} ms",
-                        messageListenerContainer.getListenerId(), gauge);
+                String topics = Objects.requireNonNull(messageListenerContainer.getAssignedPartitions()).stream()
+                        .map(TopicPartition::topic).collect(Collectors.joining(", "));
+                log.debug("[EMK] Waiting for partition assignment for {} is succeeded in {} ms, topics: {}",
+                        messageListenerContainer.getListenerId(), gauge, topics);
             } else {
                 log.error("[EMK] Waiting for partition assignment for {} is failed in {} ms",
                         messageListenerContainer.getListenerId(), gauge);
@@ -153,8 +155,8 @@ public class KafkaSupport {
     }
 
     public static Map<TopicPartition, Long> getCurrentOffsetsForAllPartitions(ApplicationContext applicationContext,
-                                                                              AdminClient adminClient) throws ExecutionException,
-            InterruptedException {
+                                                                              AdminClient adminClient)
+            throws ExecutionException, InterruptedException {
         Map<TopicPartition, Long> currentOffsets = new HashMap<>();
         KafkaListenerEndpointRegistry registry = applicationContext.getBean(KafkaListenerEndpointRegistry.class);
         for (MessageListenerContainer container : registry.getListenerContainers()) {
