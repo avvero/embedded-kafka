@@ -1,7 +1,10 @@
 package pw.avvero.emk;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.admin.*;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.DescribeTopicsResult;
+import org.apache.kafka.clients.admin.ListConsumerGroupOffsetsResult;
+import org.apache.kafka.clients.admin.OffsetSpec;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.boot.autoconfigure.kafka.KafkaConnectionDetails;
 import org.springframework.context.ApplicationContext;
@@ -98,13 +101,30 @@ public class KafkaSupport {
         });
     }
 
-    public static void waitForPartitionOffsetCommit(ApplicationContext applicationContext) throws InterruptedException,
-            ExecutionException {
+    public static void waitForPartitionOffsetCommit(ApplicationContext applicationContext) throws ExecutionException,
+            InterruptedException {
+        List<String> bootstrapServers = applicationContext.getBean(KafkaConnectionDetails.class).getBootstrapServers();
+        Set<String> consumerGroups = getApplicationConsumerGroups(applicationContext);
+        waitForPartitionOffsetCommit(bootstrapServers, consumerGroups);
+    }
+
+    private static Set<String> getApplicationConsumerGroups(ApplicationContext applicationContext) {
+        Set<String> result = new HashSet<>();
+        KafkaListenerEndpointRegistry registry = applicationContext.getBean(KafkaListenerEndpointRegistry.class);
+        for (MessageListenerContainer container : registry.getListenerContainers()) {
+            result.add(container.getGroupId());
+        }
+        return result;
+    }
+
+    public static void waitForPartitionOffsetCommit(List<String> bootstrapServers, Set<String> consumerGroups)
+            throws InterruptedException, ExecutionException {
         log.debug("[EMK] Waiting for offset commit is requested");
         long startTime = System.currentTimeMillis();
-        KafkaConnectionDetails kafkaConnectionDetails = applicationContext.getBean(KafkaConnectionDetails.class);
-        try (AdminClient adminClient = AdminClient.create(singletonMap(BOOTSTRAP_SERVERS_CONFIG, kafkaConnectionDetails.getBootstrapServers()))) {
-            Map<TopicPartition, Long> endOffsets = getEndOffsetsForAllPartitions(adminClient);
+        try (AdminClient adminClient = AdminClient.create(singletonMap(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers))) {
+            // List the topics available in the cluster
+            Set<String> topics = adminClient.listTopics().namesToListings().get().keySet();
+            Map<TopicPartition, Long> endOffsets = getEndOffsetsForAllPartitions(adminClient, topics);
 
             for (Map.Entry<TopicPartition, Long> entry : endOffsets.entrySet()) {
                 TopicPartition tp = entry.getKey();
@@ -118,7 +138,7 @@ public class KafkaSupport {
                     }
                     // Get current offsets for partitions
                     // TODO slow
-                    Map<TopicPartition, Long> currentOffsets = getCurrentOffsetsForAllPartitions(applicationContext, adminClient);
+                    Map<TopicPartition, Long> currentOffsets = getCurrentOffsetsForAllPartitions(adminClient, consumerGroups);
                     currentOffset = currentOffsets.get(tp);
                     if (currentOffset == null) {
                         log.warn("[EMK] Waiting for offset commit for topic {}: topic is not under capture", tp.topic());
@@ -136,12 +156,10 @@ public class KafkaSupport {
         log.debug("[EMK] Waiting for offset commit is finished in {} ms", System.currentTimeMillis() - startTime);
     }
 
-    public static Map<TopicPartition, Long> getEndOffsetsForAllPartitions(AdminClient adminClient) throws ExecutionException,
-            InterruptedException {
-        // Get partitions and topics
-        Map<String, TopicListing> topics = adminClient.listTopics().namesToListings().get();
+    public static Map<TopicPartition, Long> getEndOffsetsForAllPartitions(AdminClient adminClient, Set<String> topics)
+            throws ExecutionException, InterruptedException {
         Map<TopicPartition, OffsetSpec> topicPartitions = new HashMap<>();
-        for (String topic : topics.keySet()) {
+        for (String topic : topics) {
             DescribeTopicsResult topicInfo = adminClient.describeTopics(Collections.singletonList(topic));
             int partitions = topicInfo.topicNameValues().get(topic).get().partitions().size();
             for (int i = 0; i < partitions; i++) {
@@ -154,18 +172,14 @@ public class KafkaSupport {
         return endOffsets;
     }
 
-    public static Map<TopicPartition, Long> getCurrentOffsetsForAllPartitions(ApplicationContext applicationContext,
-                                                                              AdminClient adminClient)
+    public static Map<TopicPartition, Long> getCurrentOffsetsForAllPartitions(AdminClient adminClient,
+                                                                              Set<String> consumerGroups)
             throws ExecutionException, InterruptedException {
         Map<TopicPartition, Long> currentOffsets = new HashMap<>();
-        KafkaListenerEndpointRegistry registry = applicationContext.getBean(KafkaListenerEndpointRegistry.class);
-        for (MessageListenerContainer container : registry.getListenerContainers()) {
-            String groupId = container.getGroupId();
-            if (groupId != null) {
-                ListConsumerGroupOffsetsResult offsetsResult = adminClient.listConsumerGroupOffsets(groupId);
-                offsetsResult.partitionsToOffsetAndMetadata().get().forEach((tp, oam) ->
-                        currentOffsets.put(tp, oam.offset()));
-            }
+        for (String groupId : consumerGroups) {
+            ListConsumerGroupOffsetsResult offsetsResult = adminClient.listConsumerGroupOffsets(groupId);
+            offsetsResult.partitionsToOffsetAndMetadata().get().forEach((tp, oam) ->
+                    currentOffsets.put(tp, oam.offset()));
         }
         return currentOffsets;
     }
