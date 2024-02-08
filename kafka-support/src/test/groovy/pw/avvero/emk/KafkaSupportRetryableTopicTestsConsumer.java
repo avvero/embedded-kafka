@@ -9,7 +9,6 @@ import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.kafka.retrytopic.SameIntervalTopicReuseStrategy;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Data
 @Slf4j
@@ -24,7 +23,6 @@ public class KafkaSupportRetryableTopicTestsConsumer {
             sameIntervalTopicReuseStrategy = SameIntervalTopicReuseStrategy.SINGLE_TOPIC,
             backoff = @Backoff(delayExpression = "100"),
             attempts = "3")
-    @Transactional
     public void consume(ConsumerRecord<Object, Object> record) {
         throw new RuntimeException("Can't process event, i'm broken");
     }

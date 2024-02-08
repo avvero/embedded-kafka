@@ -17,10 +17,10 @@ public class KafkaContainerConfiguration {
 //        return new EmbeddedKafkaContainer("avvero/emk-native:1.0.0");
 //    }
 
-    @Bean
-    @RestartScope
-    @ServiceConnection
-    KafkaContainer kafkaContainer() {
-        return new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.3"));
-    }
+//    @Bean
+//    @RestartScope
+//    @ServiceConnection
+//    KafkaContainer kafkaContainer() {
+//        return new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.3"));
+//    }
 }

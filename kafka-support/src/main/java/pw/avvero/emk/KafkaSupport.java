@@ -25,7 +25,7 @@ import static org.apache.kafka.clients.admin.AdminClientConfig.BOOTSTRAP_SERVERS
 @Slf4j
 public class KafkaSupport {
 
-    public static final int WAIT_OFFSET_COMMIT_ATTEMPTS_MAX = 100;
+    public static final int WAIT_OFFSET_COMMIT_ATTEMPTS_MAX = 200;
 
     /**
      * Waits for the partition assignment for all Kafka listener containers in the application context.
@@ -43,21 +43,21 @@ public class KafkaSupport {
         //
         KafkaListenerEndpointRegistry registry = applicationContext.getBean(KafkaListenerEndpointRegistry.class);
         log.debug("[EMK] Waiting for partition assignment is requested");
-        for (MessageListenerContainer messageListenerContainer : registry.getListenerContainers()) {
-            long startTime = System.currentTimeMillis();
-            log.debug("[EMK] Waiting for partition assignment started for {}", messageListenerContainer.getListenerId());
-            int partitions = ContainerTestUtils.waitForAssignment(messageListenerContainer, 1);
-            long gauge = System.currentTimeMillis() - startTime;
-            if (partitions > 0) {
-                String topics = Objects.requireNonNull(messageListenerContainer.getAssignedPartitions()).stream()
-                        .map(TopicPartition::topic).collect(Collectors.joining(", "));
-                log.debug("[EMK] Waiting for partition assignment for {} is succeeded in {} ms, topics: {}",
-                        messageListenerContainer.getListenerId(), gauge, topics);
-            } else {
-                log.error("[EMK] Waiting for partition assignment for {} is failed in {} ms",
-                        messageListenerContainer.getListenerId(), gauge);
-            }
-        }
+//        for (MessageListenerContainer messageListenerContainer : registry.getListenerContainers()) {
+//            long startTime = System.currentTimeMillis();
+//            log.debug("[EMK] Waiting for partition assignment started for {}", messageListenerContainer.getListenerId());
+//            int partitions = ContainerTestUtils.waitForAssignment(messageListenerContainer, 1);
+//            long gauge = System.currentTimeMillis() - startTime;
+//            if (partitions > 0) {
+//                String topics = Objects.requireNonNull(messageListenerContainer.getAssignedPartitions()).stream()
+//                        .map(TopicPartition::topic).collect(Collectors.joining(", "));
+//                log.debug("[EMK] Waiting for partition assignment for {} is succeeded in {} ms, topics: {}",
+//                        messageListenerContainer.getListenerId(), gauge, topics);
+//            } else {
+//                log.error("[EMK] Waiting for partition assignment for {} is failed in {} ms",
+//                        messageListenerContainer.getListenerId(), gauge);
+//            }
+//        }
         log.debug("[EMK] At least one partition is assigned for every container");
         // Experimentally
         log.debug("[EMK] Waiting for partition assignment, kafka producer: start initialization");
@@ -125,10 +125,10 @@ public class KafkaSupport {
             // List the topics available in the cluster
             Set<String> topics = adminClient.listTopics().namesToListings().get().keySet();
             Map<TopicPartition, Long> endOffsets = getEndOffsetsForAllPartitions(adminClient, topics);
-
-            for (Map.Entry<TopicPartition, Long> entry : endOffsets.entrySet()) {
-                TopicPartition tp = entry.getKey();
-                long endOffset = entry.getValue();
+            Queue<TopicPartition> topicQueue = new LinkedList<>(endOffsets.keySet());
+            while (!topicQueue.isEmpty()) {
+                TopicPartition tp = topicQueue.remove();
+                long endOffset = endOffsets.get(tp);
                 Long currentOffset;
                 int attempt = 0;
                 do {
@@ -147,10 +147,19 @@ public class KafkaSupport {
                                 currentOffset, endOffset);
                     }
                     //
-                    if (currentOffset != null && currentOffset < endOffset) {
+                    if (currentOffset != null && currentOffset != endOffset) {
                         Thread.sleep(50); // todo parametrize
+                        log.warn("[EMK] Current offset for topic '{}' is {}, which is not equal to the expected end offset of {}. " +
+                                        "Waiting for further message processing before proceeding. Refreshing end offsets and reevaluating.",
+                                tp.topic(), currentOffset, endOffset);
+                        endOffsets = getEndOffsetsForAllPartitions(adminClient, topics);
+                        List<TopicPartition> sortedTopicPartitions = endOffsets.keySet().stream()
+                                .sorted((a, b) -> a.topic().equals(tp.topic()) ? -1 : b.topic().equals(tp.topic()) ? 1 : 0)
+                                .toList();
+                        topicQueue.clear();
+                        topicQueue.addAll(sortedTopicPartitions);
                     }
-                } while (currentOffset != null && currentOffset < endOffset);
+                } while (currentOffset != null && currentOffset != endOffset);
             }
         }
         log.debug("[EMK] Waiting for offset commit is finished in {} ms", System.currentTimeMillis() - startTime);
