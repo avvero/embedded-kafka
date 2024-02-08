@@ -43,21 +43,21 @@ public class KafkaSupport {
         //
         KafkaListenerEndpointRegistry registry = applicationContext.getBean(KafkaListenerEndpointRegistry.class);
         log.debug("[EMK] Waiting for partition assignment is requested");
-//        for (MessageListenerContainer messageListenerContainer : registry.getListenerContainers()) {
-//            long startTime = System.currentTimeMillis();
-//            log.debug("[EMK] Waiting for partition assignment started for {}", messageListenerContainer.getListenerId());
-//            int partitions = ContainerTestUtils.waitForAssignment(messageListenerContainer, 1);
-//            long gauge = System.currentTimeMillis() - startTime;
-//            if (partitions > 0) {
-//                String topics = Objects.requireNonNull(messageListenerContainer.getAssignedPartitions()).stream()
-//                        .map(TopicPartition::topic).collect(Collectors.joining(", "));
-//                log.debug("[EMK] Waiting for partition assignment for {} is succeeded in {} ms, topics: {}",
-//                        messageListenerContainer.getListenerId(), gauge, topics);
-//            } else {
-//                log.error("[EMK] Waiting for partition assignment for {} is failed in {} ms",
-//                        messageListenerContainer.getListenerId(), gauge);
-//            }
-//        }
+        for (MessageListenerContainer messageListenerContainer : registry.getListenerContainers()) {
+            long startTime = System.currentTimeMillis();
+            log.debug("[EMK] Waiting for partition assignment started for {}", messageListenerContainer.getListenerId());
+            int partitions = ContainerTestUtils.waitForAssignment(messageListenerContainer, 1);
+            long gauge = System.currentTimeMillis() - startTime;
+            if (partitions > 0) {
+                String topics = Objects.requireNonNull(messageListenerContainer.getAssignedPartitions()).stream()
+                        .map(TopicPartition::topic).collect(Collectors.joining(", "));
+                log.debug("[EMK] Waiting for partition assignment for {} is succeeded in {} ms, topics: {}",
+                        messageListenerContainer.getListenerId(), gauge, topics);
+            } else {
+                log.error("[EMK] Waiting for partition assignment for {} is failed in {} ms",
+                        messageListenerContainer.getListenerId(), gauge);
+            }
+        }
         log.debug("[EMK] At least one partition is assigned for every container");
         // Experimentally
         log.debug("[EMK] Waiting for partition assignment, kafka producer: start initialization");
