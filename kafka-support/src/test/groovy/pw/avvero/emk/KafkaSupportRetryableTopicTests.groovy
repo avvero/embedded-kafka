@@ -39,7 +39,6 @@ class KafkaSupportRetryableTopicTests extends Specification {
                 .setHeader(KafkaHeaders.KEY, key)
                 .build()
         kafkaTemplate.send(message).get()
-        //Thread.sleep(2000)
         KafkaSupport.waitForPartitionOffsetCommit(applicationContext)
         then:
         recordCaptor.getRecords("topicBroken", key) == ["value"]

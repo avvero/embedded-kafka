@@ -22,7 +22,8 @@ import static org.apache.kafka.clients.admin.AdminClientConfig.BOOTSTRAP_SERVERS
 @Slf4j
 public class KafkaSupport {
 
-    public static final int WAIT_OFFSET_COMMIT_ATTEMPTS_MAX = 200;
+    public static final int OFFSET_COMMIT_WAIT_ATTEMPTS_MAX = 200;
+    public static final int OFFSET_COMMIT_WAIT_TIME = 50;
 
     /**
      * Waits for the partition assignment for all Kafka listener containers in the application context.
@@ -56,10 +57,6 @@ public class KafkaSupport {
             }
         }
         log.debug("[EMK] At least one partition is assigned for every container");
-        // Experimentally
-        log.debug("[EMK] Waiting for partition assignment, kafka producer: start initialization");
-//        applicationContext.getBean(KafkaTemplate.class).send("test", "test").get();
-        log.debug("[EMK] Waiting for partition assignment, kafka producer: initialization finished");
     }
 
     /**
@@ -127,8 +124,8 @@ public class KafkaSupport {
             while (!topicQueue.isEmpty()) {
                 TopicPartition tp = topicQueue.remove();
                 long topicOffset = topicsOffsets.get(tp);
-                if (++attempt > WAIT_OFFSET_COMMIT_ATTEMPTS_MAX) {
-                    throw new RuntimeException("Exceeded maximum attempts (" + WAIT_OFFSET_COMMIT_ATTEMPTS_MAX
+                if (++attempt > OFFSET_COMMIT_WAIT_ATTEMPTS_MAX) {
+                    throw new RuntimeException("Exceeded maximum attempts (" + OFFSET_COMMIT_WAIT_ATTEMPTS_MAX
                             + ") waiting for offset commit for partition " + tp + ".");
                 }
                 // Get current offsets for partitions
@@ -137,15 +134,19 @@ public class KafkaSupport {
                 for (String consumerGroup : consumerGroups) {
                     Long consumerGroupOffset = consumerGroupsOffsets.get(consumerGroup);
                     if (consumerGroupOffset == null) {
-//                        log.warn("[EMK] Waiting for offset commit for topic {} in group {}: topic is not under capture",
-//                                tp.topic(), consumerGroup);
+                        log.trace("[EMK] Waiting for offset commit for topic {} in group {}: topic is not under capture",
+                                tp.topic(), consumerGroup);
                     } else {
-//                        log.debug("[EMK] Waiting for offset commit for topic {} in group {}: [topic offset: {} != group offset: {}]",
-//                                tp.topic(), consumerGroup, consumerGroupOffset, topicOffset);
+                        log.trace("[EMK] Waiting for offset commit for topic {} in group {}: [topic offset: {} != group offset: {}]",
+                                tp.topic(), consumerGroup, consumerGroupOffset, topicOffset);
                     }
-                    //
                     if (consumerGroupOffset != null && consumerGroupOffset != topicOffset) {
-                        Thread.sleep(50); // todo parametrize
+                        try {
+                            Thread.sleep(OFFSET_COMMIT_WAIT_TIME); // NOSONAR magic #
+                        }
+                        catch (@SuppressWarnings("unused") InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
                         log.warn("[EMK] Consumer group {} offset for topic '{}' is {}, which is not equal to the topic offset {}. " +
                                         "Waiting for further message processing before proceeding. Refreshing end offsets and reevaluating.",
                                 consumerGroup, tp.topic(), consumerGroupOffset, topicOffset);
