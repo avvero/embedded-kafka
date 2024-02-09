@@ -1,10 +1,7 @@
 package pw.avvero.emk;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.DescribeTopicsResult;
-import org.apache.kafka.clients.admin.ListConsumerGroupOffsetsResult;
-import org.apache.kafka.clients.admin.OffsetSpec;
+import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.boot.autoconfigure.kafka.KafkaConnectionDetails;
 import org.springframework.context.ApplicationContext;
@@ -124,48 +121,48 @@ public class KafkaSupport {
         try (AdminClient adminClient = AdminClient.create(singletonMap(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers))) {
             // List the topics available in the cluster
             Set<String> topics = adminClient.listTopics().namesToListings().get().keySet();
-            Map<TopicPartition, Long> endOffsets = getEndOffsetsForAllPartitions(adminClient, topics);
-            Queue<TopicPartition> topicQueue = new LinkedList<>(endOffsets.keySet());
+            Map<TopicPartition, Long> topicsOffsets = getOffsetsForTopics(adminClient, topics);
+            Queue<TopicPartition> topicQueue = new LinkedList<>(topicsOffsets.keySet());
+            int attempt = 0;
             while (!topicQueue.isEmpty()) {
                 TopicPartition tp = topicQueue.remove();
-                long endOffset = endOffsets.get(tp);
-                Long currentOffset;
-                int attempt = 0;
-                do {
-                    if (++attempt > WAIT_OFFSET_COMMIT_ATTEMPTS_MAX) {
-                        throw new RuntimeException("Exceeded maximum attempts (" + WAIT_OFFSET_COMMIT_ATTEMPTS_MAX
-                                + ") waiting for offset commit for partition " + tp + ".");
-                    }
-                    // Get current offsets for partitions
-                    // TODO slow
-                    Map<TopicPartition, Long> currentOffsets = getCurrentOffsetsForAllPartitions(adminClient, consumerGroups);
-                    currentOffset = currentOffsets.get(tp);
-                    if (currentOffset == null) {
-                        log.warn("[EMK] Waiting for offset commit for topic {}: topic is not under capture", tp.topic());
+                long topicOffset = topicsOffsets.get(tp);
+                if (++attempt > WAIT_OFFSET_COMMIT_ATTEMPTS_MAX) {
+                    throw new RuntimeException("Exceeded maximum attempts (" + WAIT_OFFSET_COMMIT_ATTEMPTS_MAX
+                            + ") waiting for offset commit for partition " + tp + ".");
+                }
+                // Get current offsets for partitions
+                // TODO slow
+                Map<String, Long> consumerGroupsOffsets = getOffsetsForConsumerGroups(adminClient, consumerGroups, tp);
+                for (String consumerGroup : consumerGroups) {
+                    Long consumerGroupOffset = consumerGroupsOffsets.get(consumerGroup);
+                    if (consumerGroupOffset == null) {
+//                        log.warn("[EMK] Waiting for offset commit for topic {} in group {}: topic is not under capture",
+//                                tp.topic(), consumerGroup);
                     } else {
-                        log.debug("[EMK] Waiting for offset commit for topic {}: [current: {}, end: {}]", tp.topic(),
-                                currentOffset, endOffset);
+//                        log.debug("[EMK] Waiting for offset commit for topic {} in group {}: [topic offset: {} != group offset: {}]",
+//                                tp.topic(), consumerGroup, consumerGroupOffset, topicOffset);
                     }
                     //
-                    if (currentOffset != null && currentOffset != endOffset) {
+                    if (consumerGroupOffset != null && consumerGroupOffset != topicOffset) {
                         Thread.sleep(50); // todo parametrize
-                        log.warn("[EMK] Current offset for topic '{}' is {}, which is not equal to the expected end offset of {}. " +
+                        log.warn("[EMK] Consumer group {} offset for topic '{}' is {}, which is not equal to the topic offset {}. " +
                                         "Waiting for further message processing before proceeding. Refreshing end offsets and reevaluating.",
-                                tp.topic(), currentOffset, endOffset);
-                        endOffsets = getEndOffsetsForAllPartitions(adminClient, topics);
-                        List<TopicPartition> sortedTopicPartitions = endOffsets.keySet().stream()
+                                consumerGroup, tp.topic(), consumerGroupOffset, topicOffset);
+                        topicsOffsets = getOffsetsForTopics(adminClient, topics);
+                        List<TopicPartition> sortedTopicPartitions = topicsOffsets.keySet().stream()
                                 .sorted((a, b) -> a.topic().equals(tp.topic()) ? -1 : b.topic().equals(tp.topic()) ? 1 : 0)
                                 .toList();
                         topicQueue.clear();
                         topicQueue.addAll(sortedTopicPartitions);
                     }
-                } while (currentOffset != null && currentOffset != endOffset);
+                }
             }
         }
         log.debug("[EMK] Waiting for offset commit is finished in {} ms", System.currentTimeMillis() - startTime);
     }
 
-    public static Map<TopicPartition, Long> getEndOffsetsForAllPartitions(AdminClient adminClient, Set<String> topics)
+    public static Map<TopicPartition, Long> getOffsetsForTopics(AdminClient adminClient, Set<String> topics)
             throws ExecutionException, InterruptedException {
         Map<TopicPartition, OffsetSpec> topicPartitions = new HashMap<>();
         for (String topic : topics) {
@@ -181,14 +178,23 @@ public class KafkaSupport {
         return endOffsets;
     }
 
-    public static Map<TopicPartition, Long> getCurrentOffsetsForAllPartitions(AdminClient adminClient,
-                                                                              Set<String> consumerGroups)
+    public static Map<String, Long> getOffsetsForConsumerGroups(AdminClient adminClient,
+                                                                Set<String> consumerGroups,
+                                                                TopicPartition topicPartition)
             throws ExecutionException, InterruptedException {
-        Map<TopicPartition, Long> currentOffsets = new HashMap<>();
-        for (String groupId : consumerGroups) {
-            ListConsumerGroupOffsetsResult offsetsResult = adminClient.listConsumerGroupOffsets(groupId);
-            offsetsResult.partitionsToOffsetAndMetadata().get().forEach((tp, oam) ->
-                    currentOffsets.put(tp, oam.offset()));
+        Map<String, ListConsumerGroupOffsetsSpec> groupSpecs = new HashMap<>();
+        for (String consumerGroup : consumerGroups) {
+            ListConsumerGroupOffsetsSpec spec = new ListConsumerGroupOffsetsSpec();
+            spec.topicPartitions(List.of(topicPartition));
+            groupSpecs.put(consumerGroup, spec);
+        }
+        ListConsumerGroupOffsetsResult offsetsResult = adminClient.listConsumerGroupOffsets(groupSpecs);
+        Map<String, Long> currentOffsets = new HashMap<>();
+        for (String consumerGroup : consumerGroups) {
+            offsetsResult.partitionsToOffsetAndMetadata(consumerGroup).get().forEach((tp, oam) -> {
+                if (!topicPartition.equals(tp)) throw new RuntimeException("Wrong topic partition in response");
+                currentOffsets.put(consumerGroup, oam != null ? oam.offset() : null);
+            });
         }
         return currentOffsets;
     }
