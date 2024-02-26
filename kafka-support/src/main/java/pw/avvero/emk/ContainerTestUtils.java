@@ -32,6 +32,7 @@ import org.springframework.util.ReflectionUtils;
 /**
  * Utilities for testing listener containers. No hard references to container
  * classes are used to avoid circular project dependencies.
+ * Based on org.springframework.kafka.test.utils.ContainerTestUtils
  *
  * @author Gary Russell
  * @since 1.0.3

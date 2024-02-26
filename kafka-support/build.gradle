@@ -12,6 +12,24 @@ dependencies {
 
     implementation "org.springframework.kafka:spring-kafka:3.1.1"
     implementation "org.springframework.kafka:spring-kafka-test:3.1.1"
+    implementation "org.springframework.boot:spring-boot-autoconfigure" // TODO we need KafkaConnectionDetails
+    implementation 'org.awaitility:awaitility:4.0.2'
+
+    testCompileOnly "org.projectlombok:lombok:1.18.30"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-devtools'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+
+    testImplementation 'org.codehaus.groovy:groovy-json:3.0.19'
+    testImplementation 'org.spockframework:spock-core:2.3-groovy-3.0'
+    testImplementation 'org.spockframework:spock-spring:2.3-groovy-3.0'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:kafka'
+
+    testImplementation 'pw.avvero:emk-testcontainers:1.0.0'
 }
 
 tasks.named('test') {
