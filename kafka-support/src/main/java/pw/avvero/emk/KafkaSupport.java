@@ -95,27 +95,36 @@ public class KafkaSupport {
         });
     }
 
+    /**
+     * Waits for the offset commit for a given list of bootstrap servers retrieved from the application context.
+     *
+     * @param applicationContext The Spring application context from which to retrieve Kafka connection details.
+     * @throws ExecutionException if an error occurs during the fetching of consumer group or topic information.
+     * @throws InterruptedException if the current thread is interrupted while waiting.
+     */
     public static void waitForPartitionOffsetCommit(ApplicationContext applicationContext) throws ExecutionException,
             InterruptedException {
         List<String> bootstrapServers = applicationContext.getBean(KafkaConnectionDetails.class).getBootstrapServers();
-        Set<String> consumerGroups = getApplicationConsumerGroups(applicationContext);
-        waitForPartitionOffsetCommit(bootstrapServers, consumerGroups);
+        waitForPartitionOffsetCommit(bootstrapServers);
     }
 
-    private static Set<String> getApplicationConsumerGroups(ApplicationContext applicationContext) {
-        Set<String> result = new HashSet<>();
-        KafkaListenerEndpointRegistry registry = applicationContext.getBean(KafkaListenerEndpointRegistry.class);
-        for (MessageListenerContainer container : registry.getListenerContainers()) {
-            result.add(container.getGroupId());
-        }
-        return result;
-    }
-
-    public static void waitForPartitionOffsetCommit(List<String> bootstrapServers, Set<String> consumerGroups)
+    /**
+     * Waits for the offset commit across all consumer groups for all topics in the provided list of bootstrap servers.
+     * This method checks the offset commit for each partition of each topic and ensures that all consumer groups have
+     * committed their offsets. It continuously checks the offsets until they are committed or until a maximum number of
+     * attempts is reached.
+     *
+     * @param bootstrapServers The list of bootstrap servers for the Kafka cluster.
+     * @throws InterruptedException if the thread is interrupted while waiting for the offsets to commit.
+     * @throws ExecutionException if an error occurs during the fetching of consumer group or topic information.
+     */
+    public static void waitForPartitionOffsetCommit(List<String> bootstrapServers)
             throws InterruptedException, ExecutionException {
         log.debug("[EMK] Waiting for offset commit is requested");
         long startTime = System.currentTimeMillis();
         try (AdminClient adminClient = AdminClient.create(singletonMap(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers))) {
+            Set<String> consumerGroups = adminClient.listConsumerGroups().all().get()
+                    .stream().map(ConsumerGroupListing::groupId).collect(Collectors.toSet());
             // List the topics available in the cluster
             Set<String> topics = adminClient.listTopics().namesToListings().get().keySet();
             Map<TopicPartition, Long> topicsOffsets = getOffsetsForTopics(adminClient, topics);
