@@ -17,7 +17,7 @@ emk-testcontainers-deploy:
 
 emk-run-with-agent:
 	./gradlew emk-application:installBootDist
-	java -agentlib:native-image-agent=config-output-dir=emk-application/src/main/resources/META-INF/native-image -jar emk-application/build/libs/emk-application-${VERSION}.jar --app.kafka.startup-mode=at-once
+	java -agentlib:native-image-agent=config-output-dir=emk-application/src/main/resources/META-INF/native-image -jar emk-application/build/libs/emk-application-${VERSION}.jar
 
 # Native build command
 emk-native-build:

@@ -37,7 +37,7 @@ class KafkaTests extends Specification {
                 .setHeader(KafkaHeaders.TOPIC, "topic1")
                 .build()
         kafkaTemplate.send(message).get()
-        Thread.sleep(2000) // TODO
+        KafkaSupport.waitForPartitionOffsetCommit(applicationContext)
         then:
         consumer.events == ["value1"]
     }

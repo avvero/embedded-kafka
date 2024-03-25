@@ -41,7 +41,7 @@ public class EmbeddedKafkaContainer extends GenericContainer<EmbeddedKafkaContai
         //
         String command = "#!/bin/bash\n"
                 + (imageName.contains("native") ? "/app/emk-application" : "./emk-application-boot/bin/emk-application")
-                + " --app.kafka.startup-mode=at-once --app.kafka.advertised.listeners="
+                + " --app.kafka.advertised.listeners="
                 + advertisedListeners;
         copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
     }
