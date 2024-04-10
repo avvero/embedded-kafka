@@ -5,7 +5,7 @@
 
     <groupId>pw.avvero</groupId>
     <artifactId>emk-testcontainers</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <name>EmbeddedKafka Testcontainers Support</name>

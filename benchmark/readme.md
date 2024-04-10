@@ -8,8 +8,8 @@ different Kafka container configurations.
 
 Benchmarks to measure time taken to start and stop:
 - `testContainersKafkaStart`: Kafka container provided by `confluentinc/cp-kafka:7.3.3`.
-- `emkJvmKafkaStart`: custom Kafka container `avvero/emk:1.0.0`.
-- `emkNativeKafkaStart`: custom Kafka container `avvero/emk-native:1.0.0`, optimized for native execution.
+- `emkJvmKafkaStart`: custom Kafka container `avvero/emk:1.1.0`.
+- `emkNativeKafkaStart`: custom Kafka container `avvero/emk-native:1.1.0`, optimized for native execution.
 
 Benchmarks for Startup and Readiness (accordingly):
 - `testContainersKafkaStartAndReady`

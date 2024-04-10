@@ -1,7 +1,7 @@
 ####
 # Build image
 ####
-FROM --platform=linux/arm64 ghcr.io/graalvm/graalvm-ce:ol7-java17 AS build
+FROM --platform=linux/arm64 container-registry.oracle.com/graalvm/jdk:21 AS build
 LABEL maintainer=avvero
 
 COPY gradlew /app/

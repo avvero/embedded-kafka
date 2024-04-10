@@ -2,9 +2,9 @@ plugins {
     id 'java'
     id 'groovy'
     id 'application'
-    id 'org.springframework.boot' version '3.2.0'
+    id 'org.springframework.boot' version '3.2.4'
     id 'io.spring.dependency-management' version '1.1.4'
-    id 'org.graalvm.buildtools.native' version '0.9.17'
+    id 'org.graalvm.buildtools.native' version '0.9.28'
 }
 
 dependencies {
@@ -12,8 +12,8 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
     implementation 'org.springframework.boot:spring-boot-starter'
-    implementation "org.springframework.kafka:spring-kafka:3.1.1"
-    implementation "org.springframework.kafka:spring-kafka-test:3.1.1"
+    implementation "org.springframework.kafka:spring-kafka"
+    implementation "org.springframework.kafka:spring-kafka-test"
 
     testCompileOnly "org.projectlombok:lombok:1.18.30"
     testAnnotationProcessor "org.projectlombok:lombok:1.18.30"

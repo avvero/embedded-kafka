@@ -21,13 +21,13 @@ public class TestContainersBenchmark {
 
     @Benchmark
     public void emkJvmKafkaStart() throws ExecutionException, InterruptedException {
-        EmbeddedKafkaContainer container = new EmbeddedKafkaContainer("avvero/emk:1.0.0");
+        EmbeddedKafkaContainer container = new EmbeddedKafkaContainer("avvero/emk:1.1.0");
         container.start();
         container.stop();
     }
     @Benchmark
     public void emkNativeKafkaStart() throws ExecutionException, InterruptedException {
-        EmbeddedKafkaContainer container = new EmbeddedKafkaContainer("avvero/emk-native:1.0.0");
+        EmbeddedKafkaContainer container = new EmbeddedKafkaContainer("avvero/emk-native:1.1.0");
         container.start();
         container.stop();
     }
@@ -42,14 +42,14 @@ public class TestContainersBenchmark {
 
     @Benchmark
     public void emkJvmKafkaStartAndReady() throws ExecutionException, InterruptedException {
-        EmbeddedKafkaContainer container = new EmbeddedKafkaContainer("avvero/emk:1.0.0");
+        EmbeddedKafkaContainer container = new EmbeddedKafkaContainer("avvero/emk:1.1.0");
         container.start();
         checkKafkaReadiness(container.getBootstrapServers());
         container.stop();
     }
     @Benchmark
     public void emkNativeKafkaStartAndReady() throws ExecutionException, InterruptedException {
-        EmbeddedKafkaContainer container = new EmbeddedKafkaContainer("avvero/emk-native:1.0.0");
+        EmbeddedKafkaContainer container = new EmbeddedKafkaContainer("avvero/emk-native:1.1.0");
         container.start();
         checkKafkaReadiness(container.getBootstrapServers());
         container.stop();

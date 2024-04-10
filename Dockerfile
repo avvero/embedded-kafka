@@ -1,7 +1,7 @@
 ####
 # Build image
 ####
-FROM openjdk:17 AS build
+FROM openjdk:21 AS build
 LABEL maintainer=avvero
 
 RUN microdnf install findutils
@@ -18,7 +18,7 @@ RUN ./gradlew emk-application:installBootDist --no-daemon
 ####
 # Runtime image
 ####
-FROM openjdk:17
+FROM openjdk:21
 
 COPY --from=build /app/emk-application/build/install/emk-application-boot emk-application-boot
 

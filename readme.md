@@ -21,12 +21,12 @@ speed and memory usage — and it’s not in favor of the latter.
 Add dependency
 
 ```groovy
-implementation 'pw.avvero:emk-testcontainers:1.0.0'
+implementation 'pw.avvero:emk-testcontainers:1.1.0'
 ```
 
 Create a `EmbeddedKafkaContainer` to use it in your tests:
 ```java
-EmbeddedKafkaContainer kafka = new EmbeddedKafkaContainer("avvero/emk-native:1.0.0"); // OR avvero/emk:latest
+EmbeddedKafkaContainer kafka = new EmbeddedKafkaContainer("avvero/emk-native:1.1.0"); // OR avvero/emk:latest
 ```
 
 ### Improved Testcontainers Support in Spring Boot 3.1

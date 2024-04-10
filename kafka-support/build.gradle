@@ -29,7 +29,7 @@ dependencies {
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:kafka'
 
-    testImplementation 'pw.avvero:emk-testcontainers:1.0.0'
+    testImplementation 'pw.avvero:emk-testcontainers:1.1.0'
 }
 
 tasks.named('test') {
