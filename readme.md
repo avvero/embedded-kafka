@@ -1,3 +1,10 @@
+### Overview
+**Problem**: Integration tests using Kafka containers face high memory consumption and long startup times, slowing down the testing process and increasing resource costs.\
+**Solution**: Using a native image for EmbeddedKafka with GraalVM.\
+**Status**: Completed, article is published, currently using.
+
+----
+
 # Native Embedded kafka in Docker Container
 
 <div align="center">
@@ -13,8 +20,8 @@ this image in integration tests not only speeds up the execution of test scenari
 Interestingly, when compared to using confluentinc/cp-kafka in Testcontainers, there is a noticeable difference in both 
 speed and memory usage — and it’s not in favor of the latter.
 
-- RU: [Как сократить потребление памяти в интеграционных тестах с Kafka с помощью GraalVM](https://habr.com/ru/articles/788812/)
-- EN: [How to Reduce Memory Consumption in Integration Tests with Kafka Using GraalVM](https://medium.com/@avvero.abernathy/how-to-reduce-memory-consumption-in-integration-tests-with-kafka-using-graalvm-de2393f7fe8a)
+Article on Habr - [Как сократить потребление памяти в интеграционных тестах с Kafka с помощью GraalVM](https://habr.com/ru/articles/788812/)
+Article on Medium - [How to Reduce Memory Consumption in Integration Tests with Kafka Using GraalVM](https://medium.com/@avvero.abernathy/how-to-reduce-memory-consumption-in-integration-tests-with-kafka-using-graalvm-de2393f7fe8a)
 
 ## Usage
 
